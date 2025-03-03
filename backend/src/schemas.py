@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class Message(BaseModel):
@@ -19,3 +19,8 @@ class DepartmentSchema(BaseModel):
 class DepartmentPublic(BaseModel):
     id: int
     name: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DepartmentPublicList(BaseModel):
+    departments: list[DepartmentPublic]

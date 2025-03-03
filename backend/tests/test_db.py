@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from backend.models import Department
+from src.models import Department
 
 
 def test_create_department_db(session):

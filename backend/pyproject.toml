@@ -42,9 +42,9 @@ addopts = '-p no:warnings'
 lint = 'ruff check'
 pre_format = 'ruff check --fix'
 format = 'ruff format'
-run = 'fastapi dev backend/main.py'
+run = 'fastapi dev src/main.py'
 pre_test = 'task lint'
-test = 'pytest -s -x --cov=backend -vv'
+test = 'pytest -s -x --cov=src -vv'
 post_test = 'coverage html'
 
 [build-system]
