@@ -1,5 +1,8 @@
 name: backend continuous integration
-on: pull_request
+on: 
+  pull_request:
+  branches:
+    - main
 
 jobs:
   test:
@@ -17,8 +20,13 @@ jobs:
       - name: Instalar o poetry
         run: pipx install poetry
 
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
       - name: Instalando as dependências do projeto
         run: poetry install --no-root
+        working-directory: backend
 
       - name: Executar testes
         run: poetry run task test
+        working-directory: backend

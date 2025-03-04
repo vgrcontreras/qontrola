@@ -29,7 +29,7 @@ class Department:
     __tablename__ = 'departments'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    name: Mapped[str] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False, unique=True)
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
