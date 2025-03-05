@@ -3,12 +3,13 @@ from http import HTTPStatus
 
 from fastapi import FastAPI
 
-from src.routes import departments
-from src.schemas import Message
+from src.routes import departments, users
+from src.schemas.base import Message
 
 app = FastAPI()
 
 app.include_router(departments.router)
+app.include_router(users.router)
 
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Message)
