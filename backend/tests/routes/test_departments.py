@@ -3,7 +3,7 @@ from http import HTTPStatus
 import pytest
 
 from src.models import Department
-from src.schemas import DepartmentPublic
+from src.schemas.departments import DepartmentPublic
 
 
 @pytest.fixture
