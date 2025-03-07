@@ -13,6 +13,8 @@ pydantic-settings = "^2.7.1"
 alembic = "^1.14.1"
 fastapi = {extras = ["standard"], version = "^0.115.8"}
 pre-commit = "^4.1.0"
+pyjwt = "^2.10.1"
+tzdata = "^2025.1"
 
 
 
