@@ -16,6 +16,7 @@ from src.schemas.users import (
     UserSchema,
     UserUpdate,
 )
+from src.security import get_current_user, get_password_hash
 
 router = APIRouter(prefix='/users', tags=['users'])
 
@@ -32,6 +33,8 @@ def create_user(user: UserSchema, session: T_Session):
         )
 
     user_attrs = user.model_dump()
+
+    user_attrs['password'] = get_password_hash(user.password)
 
     new_user = User(**user_attrs)
 
@@ -50,7 +53,16 @@ def read_users(session: T_Session):
 
 
 @router.delete('/{user_id}', status_code=HTTPStatus.OK, response_model=Message)
-def delete_user(user_id: int, session: T_Session):
+def delete_user(
+    user_id: int,
+    session: T_Session,
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='Not Enough Permission'
+        )
+
     db_user = session.scalar(select(User).where(User.id == user_id))
 
     if db_user is None:
@@ -58,7 +70,9 @@ def delete_user(user_id: int, session: T_Session):
             status_code=HTTPStatus.BAD_REQUEST, detail='User Not Found'
         )
 
-    session.delete(db_user)
+    db_user.is_active = False
+
+    session.add(db_user)
     session.commit()
 
     return {'message': 'User deleted'}
@@ -67,7 +81,17 @@ def delete_user(user_id: int, session: T_Session):
 @router.patch(
     '/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublicSalary
 )
-def update_user(user_id: int, user: UserUpdate, session: T_Session):
+def update_user(
+    user_id: int,
+    user: UserUpdate,
+    session: T_Session,
+    current_user=Depends(get_current_user),
+):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='Not Enough Permission'
+        )
+
     db_user = session.scalar(select(User).where(User.id == user_id))
 
     if db_user is None:
@@ -76,7 +100,12 @@ def update_user(user_id: int, user: UserUpdate, session: T_Session):
         )
 
     try:
-        for key, value in user.model_dump(exclude_unset=True).items():
+        user_data = user.model_dump(exclude_unset=True)
+
+        if 'password' in user_data:
+            user_data['password'] = get_password_hash(user_data['password'])
+
+        for key, value in user_data.items():
             setattr(db_user, key, value)
 
         session.add(db_user)

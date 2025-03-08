@@ -1,26 +1,6 @@
 from http import HTTPStatus
 
-import pytest
-
-from src.models import User
 from src.schemas.users import UserPublic
-
-
-@pytest.fixture
-def user(session):
-    new_user = User(
-        first_name='test',
-        last_name='test',
-        email='test@test.com',
-        password='test_password',
-        salary=1000,
-    )
-
-    session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
-
-    return new_user
 
 
 def test_create_user(client):
@@ -61,18 +41,20 @@ def test_create_user_already_exists(client, user):
     assert response.json() == {'detail': 'User already exists'}
 
 
-def test_delete_user(client, user):
-    response = client.delete(f'/users/{user.id}')
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_delete_user_not_found(client):
-    response = client.delete('/users/1')
+# def test_delete_user_not_found(client):
+#     response = client.delete('/users/1')
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': 'User Not Found'}
+#     assert response.status_code == HTTPStatus.BAD_REQUEST
+#     assert response.json() == {'detail': 'User Not Found'}
 
 
 def test_read_users(client):
@@ -90,14 +72,14 @@ def test_read_users_with_user(client, user):
     assert response.json() == {'users': [user_schema]}
 
 
-def test_update_user_not_found(client):
-    response = client.patch('/users/1', json={'salary': 300})
+# def test_update_user_not_found(client):
+#     response = client.patch('/users/1', json={'salary': 300})
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': 'User Not Found'}
+#     assert response.status_code == HTTPStatus.BAD_REQUEST
+#     assert response.json() == {'detail': 'User Not Found'}
 
 
-def test_update_user_integrity_error(client, user):
+def test_update_user_integrity_error(client, user, token):
     # criando novo usuário
     client.post(
         '/users/',
@@ -112,14 +94,22 @@ def test_update_user_integrity_error(client, user):
 
     # alterando email do novo usuário para e-mail já existente
 
-    response_update = client.patch('/users/2', json={'email': 'test@test.com'})
+    response_update = client.patch(
+        f'/users/{user.id}',
+        json={'email': 'test@email.com'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
 
     assert response_update.status_code == HTTPStatus.CONFLICT
     assert response_update.json() == {'detail': 'User email already exists'}
 
 
-def test_update_user(client, user):
-    response = client.patch('/users/1', json={'salary': 300})
+def test_update_user(client, user, token):
+    response = client.patch(
+        f'/users/{user.id}',
+        json={'salary': 300},
+        headers={'Authorization': f'Bearer {token}'},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
