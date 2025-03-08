@@ -8,6 +8,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      SECRET_KEY: ${{ secrets.SECRETY_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+
     steps:
       - name: Copiar os arquivos do diretório
         uses: actions/checkout@v4
