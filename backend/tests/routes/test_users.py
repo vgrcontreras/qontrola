@@ -1,26 +1,6 @@
 from http import HTTPStatus
 
-import pytest
-
-from src.models import User
 from src.schemas.users import UserPublic
-
-
-@pytest.fixture
-def user(session):
-    new_user = User(
-        first_name='test',
-        last_name='test',
-        email='test@test.com',
-        password='test_password',
-        salary=1000,
-    )
-
-    session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
-
-    return new_user
 
 
 def test_create_user(client):
