@@ -54,7 +54,9 @@ def read_users(session: T_Session):
 
 @router.delete('/{user_id}', status_code=HTTPStatus.OK, response_model=Message)
 def delete_user(
-    user_id: int, session: T_Session, current_user=Depends(get_current_user)
+    user_id: int,
+    session: T_Session,
+    current_user: User = Depends(get_current_user),
 ):
     if current_user.id != user_id:
         raise HTTPException(
