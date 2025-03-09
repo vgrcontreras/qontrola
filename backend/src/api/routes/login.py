@@ -1,33 +1,19 @@
-# from .models import
 from http import HTTPStatus
-from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 
-from src.database import get_session
+from src.api.dependencies import T_Session
 from src.models import User
-from src.routes import departments, users
-from src.schemas.base import Message
 from src.schemas.token import Token
 from src.security import create_access_token, verify_password
 
-app = FastAPI()
-
-T_Session = Annotated[Session, Depends(get_session)]
-
-app.include_router(departments.router)
-app.include_router(users.router)
+router = APIRouter(prefix='/token', tags=['token'])
 
 
-@app.get('/', status_code=HTTPStatus.OK, response_model=Message)
-def read_root():
-    return {'message': 'Olá Mundo!'}
-
-
-@app.post('/token', status_code=HTTPStatus.OK, response_model=Token)
+@router.post('/', status_code=HTTPStatus.OK, response_model=Token)
 def login_for_access_token(
     session: T_Session, form_data: OAuth2PasswordRequestForm = Depends()
 ):
