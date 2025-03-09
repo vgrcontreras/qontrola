@@ -1,12 +1,10 @@
 from http import HTTPStatus
-from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
-from src.database import get_session
+from src.api.dependencies import T_Session, get_current_user
 from src.models import User
 from src.schemas.base import Message
 from src.schemas.users import (
@@ -16,11 +14,9 @@ from src.schemas.users import (
     UserSchema,
     UserUpdate,
 )
-from src.security import get_current_user, get_password_hash
+from src.security import get_password_hash
 
 router = APIRouter(prefix='/users', tags=['users'])
-
-T_Session = Annotated[Session, Depends(get_session)]
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)

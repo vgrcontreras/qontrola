@@ -1,12 +1,10 @@
 from http import HTTPStatus
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
-from src.database import get_session
+from src.api.dependencies import T_Session
 from src.models import Department
 from src.schemas.departments import (
     DepartmentPublic,
@@ -16,8 +14,6 @@ from src.schemas.departments import (
 )
 
 router = APIRouter(prefix='/departments', tags=['departments'])
-
-T_Session = Annotated[Session, Depends(get_session)]
 
 
 @router.post(

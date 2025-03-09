@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
-from src.database import get_session
-from src.main import app
+from src.api.main import app
+from src.core.database import get_session
 from src.models import User, table_registry
 from src.security import get_password_hash
 
