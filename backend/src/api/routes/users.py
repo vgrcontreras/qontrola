@@ -4,7 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from src.api.dependencies import T_Session, get_current_user
+from src.api.dependencies import (
+    T_Session,
+    get_current_active_superuser,
+)
 from src.models import User
 from src.schemas.base import Message
 from src.schemas.users import (
@@ -19,7 +22,12 @@ from src.security import get_password_hash
 router = APIRouter(prefix='/users', tags=['users'])
 
 
-@router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
+@router.post(
+    '/',
+    status_code=HTTPStatus.CREATED,
+    response_model=UserPublic,
+    dependencies=[Depends(get_current_active_superuser)],
+)
 def create_user(user: UserSchema, session: T_Session):
     db_user = session.scalar(select(User).where(User.email == user.email))
 
@@ -48,17 +56,16 @@ def read_users(session: T_Session):
     return {'users': db_users}
 
 
-@router.delete('/{user_id}', status_code=HTTPStatus.OK, response_model=Message)
+@router.delete(
+    '/{user_id}',
+    status_code=HTTPStatus.OK,
+    response_model=Message,
+    dependencies=[Depends(get_current_active_superuser)],
+)
 def delete_user(
     user_id: int,
     session: T_Session,
-    current_user: User = Depends(get_current_user),
 ):
-    if current_user.id != user_id:
-        raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail='Not Enough Permission'
-        )
-
     db_user = session.scalar(select(User).where(User.id == user_id))
 
     if db_user is None:
@@ -75,19 +82,16 @@ def delete_user(
 
 
 @router.patch(
-    '/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublicSalary
+    '/{user_id}',
+    status_code=HTTPStatus.OK,
+    response_model=UserPublicSalary,
+    dependencies=[Depends(get_current_active_superuser)],
 )
 def update_user(
     user_id: int,
     user: UserUpdate,
     session: T_Session,
-    current_user=Depends(get_current_user),
 ):
-    if current_user.id != user_id:
-        raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail='Not Enough Permission'
-        )
-
     db_user = session.scalar(select(User).where(User.id == user_id))
 
     if db_user is None:

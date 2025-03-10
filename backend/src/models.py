@@ -30,6 +30,7 @@ class User:
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
     password: Mapped[str] = mapped_column(nullable=False)
     salary: Mapped[float] = mapped_column(nullable=True)
+    is_superuser: Mapped[bool] = mapped_column(default=False, nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
