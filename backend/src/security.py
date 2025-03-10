@@ -1,16 +1,10 @@
 from datetime import datetime, timedelta
-from typing import Annotated
 from zoneinfo import ZoneInfo
 
-from fastapi import Depends
 from jwt import encode
 from pwdlib import PasswordHash
-from sqlalchemy.orm import Session
 
-from src.core.database import get_session
 from src.core.settings import settings
-
-T_Session = Annotated[Session, Depends(get_session)]
 
 pwd_context = PasswordHash.recommended()
 
