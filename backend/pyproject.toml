@@ -16,6 +16,7 @@ pre-commit = "^4.1.0"
 pyjwt = "^2.10.1"
 tzdata = "^2025.1"
 pwdlib = {extras = ["argon2"], version = "^0.2.1"}
+loguru = "^0.7.3"
 
 
 
@@ -45,7 +46,7 @@ addopts = '-p no:warnings'
 lint = 'ruff check'
 pre_format = 'ruff check --fix'
 format = 'ruff format'
-run = 'fastapi dev src/main.py'
+run = 'fastapi dev src/api/main.py'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=src -vv'
 post_test = 'coverage html'
