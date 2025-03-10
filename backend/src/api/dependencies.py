@@ -8,16 +8,24 @@ from jwt import DecodeError, decode
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.core.database import get_session
+from src.core.database import engine
 from src.core.settings import settings
 from src.models import User
+
+
+def get_session():  # pragma: no cover
+    with Session(engine) as session:
+        yield session
+
 
 T_Session = Annotated[Session, Depends(get_session)]
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 
-def get_current_user(session: T_Session, token: str = Depends(oauth2_scheme)):
+def get_current_user(
+    session: T_Session, token: str = Depends(oauth2_scheme)
+) -> User:
     credentials_exception = HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,
         detail='Could not validate credentials',
@@ -42,3 +50,15 @@ def get_current_user(session: T_Session, token: str = Depends(oauth2_scheme)):
         raise credentials_exception
 
     return user_db
+
+
+CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def get_current_active_superuser(current_user: CurrentUser) -> User:
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="The user doesn't have enough previleges",
+        )
+    return current_user
