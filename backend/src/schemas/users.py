@@ -7,6 +7,7 @@ class UserSchema(BaseModel):
     email: EmailStr
     password: str
     salary: float
+    is_superuser: bool = False
 
 
 class UserPublic(BaseModel):
@@ -14,6 +15,7 @@ class UserPublic(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
+    is_superuser: bool
     is_active: bool
     model_config = ConfigDict(from_attributes=True)
 
@@ -33,4 +35,5 @@ class UserUpdate(BaseModel):
     email: EmailStr | None = None
     password: str | None = None
     salary: float | None = None
+    is_superuser: bool | None = None
     is_active: bool | None = None
