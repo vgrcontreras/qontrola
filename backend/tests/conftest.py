@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
+from src.api.dependencies import get_session
 from src.api.main import app
-from src.core.database import get_session
 from src.models import User, table_registry
 from src.security import get_password_hash
 
@@ -41,28 +41,64 @@ def session():
 def user(session):
     password = 'test_password'
 
-    new_user = User(
+    user = User(
         first_name='test',
         last_name='test',
         email='test@test.com',
         password=get_password_hash(password),
+        is_superuser=False,
         salary=1000,
     )
 
-    session.add(new_user)
+    session.add(user)
     session.commit()
-    session.refresh(new_user)
+    session.refresh(user)
 
-    new_user.clean_password = password
+    user.clean_password = password
 
-    return new_user
+    return user
 
 
 @pytest.fixture
-def token(client, user):
+def superuser(session):
+    password = 'admin'
+
+    super_user = User(
+        first_name='admin',
+        last_name='admin',
+        email='admin@admin.com',
+        password=get_password_hash(password),
+        is_superuser=True,
+        salary=0,
+    )
+
+    session.add(super_user)
+    session.commit()
+    session.refresh(super_user)
+
+    super_user.clean_password = password
+
+    return super_user
+
+
+@pytest.fixture
+def user_token(client, user):
     response = client.post(
         '/token',
         data={'username': user.email, 'password': user.clean_password},
+    )
+
+    return response.json()['access_token']
+
+
+@pytest.fixture
+def superuser_token(client, superuser):
+    response = client.post(
+        '/token',
+        data={
+            'username': superuser.email,
+            'password': superuser.clean_password,
+        },
     )
 
     return response.json()['access_token']
