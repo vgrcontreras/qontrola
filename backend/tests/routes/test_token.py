@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
 
-def test_login_for_access_token(client, user):
-    response = client.post(
+def test_login_for_access_token(api_client, user):
+    response = api_client.post(
         '/token',
         data={'username': user.email, 'password': user.clean_password},
     )
@@ -14,8 +14,8 @@ def test_login_for_access_token(client, user):
     assert 'token_type' in token
 
 
-def test_login_for_access_token_user_not_found(client):
-    response = client.post(
+def test_login_for_access_token_user_not_found(api_client):
+    response = api_client.post(
         '/token', data={'username': 'test', 'password': 'test_password'}
     )
 
@@ -23,8 +23,8 @@ def test_login_for_access_token_user_not_found(client):
     assert response.json() == {'detail': 'Incorrect email or password'}
 
 
-def test_login_for_access_token_wrong_password(client, user):
-    response = client.post(
+def test_login_for_access_token_wrong_password(api_client, user):
+    response = api_client.post(
         '/token', data={'username': user.email, 'password': 'wrong_password'}
     )
 
