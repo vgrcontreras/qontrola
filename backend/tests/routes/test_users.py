@@ -3,8 +3,8 @@ from http import HTTPStatus
 from src.schemas.users import UserPublic
 
 
-def test_create_user(client, superuser_token):
-    response = client.post(
+def test_create_user(api_client, superuser_token):
+    response = api_client.post(
         '/users/',
         json={
             'first_name': 'test',
@@ -27,8 +27,8 @@ def test_create_user(client, superuser_token):
     }
 
 
-def test_create_user_already_exists(client, superuser_token):
-    response = client.post(
+def test_create_user_already_exists(api_client, superuser_token):
+    response = api_client.post(
         '/users/',
         json={
             'first_name': 'test',
@@ -45,8 +45,8 @@ def test_create_user_already_exists(client, superuser_token):
     assert response.json() == {'detail': 'User already exists'}
 
 
-def test_delete_user(client, user, superuser_token):
-    response = client.delete(
+def test_delete_user(api_client, user, superuser_token):
+    response = api_client.delete(
         f'/users/{user.id}',
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
@@ -55,8 +55,8 @@ def test_delete_user(client, user, superuser_token):
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_delete_user_not_found(client, superuser_token):
-    response = client.delete(
+def test_delete_user_not_found(api_client, superuser_token):
+    response = api_client.delete(
         '/users/2', headers={'Authorization': f'Bearer {superuser_token}'}
     )
 
@@ -64,23 +64,23 @@ def test_delete_user_not_found(client, superuser_token):
     assert response.json() == {'detail': 'User Not Found'}
 
 
-def test_read_users(client):
-    response = client.get('/users/')
+def test_read_users(api_client):
+    response = api_client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'users': []}
 
 
-def test_read_users_with_user(client, user):
+def test_read_users_with_user(api_client, user):
     user_schema = UserPublic.model_validate(user).model_dump()
-    response = client.get('/users/')
+    response = api_client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'users': [user_schema]}
 
 
-def test_update_user_not_found(client, superuser_token):
-    response = client.patch(
+def test_update_user_not_found(api_client, superuser_token):
+    response = api_client.patch(
         '/users/2',
         json={'salary': 300},
         headers={'Authorization': f'Bearer {superuser_token}'},
@@ -90,9 +90,9 @@ def test_update_user_not_found(client, superuser_token):
     assert response.json() == {'detail': 'User Not Found'}
 
 
-def test_update_user_integrity_error(client, user, superuser_token):
+def test_update_user_integrity_error(api_client, user, superuser_token):
     # criando novo usuário
-    client.post(
+    api_client.post(
         '/users/',
         json={
             'first_name': 'name_test',
@@ -106,7 +106,7 @@ def test_update_user_integrity_error(client, user, superuser_token):
 
     # alterando email do novo usuário para e-mail já existente
 
-    response_update = client.patch(
+    response_update = api_client.patch(
         f'/users/{user.id}',
         json={'email': 'test@email.com'},
         headers={'Authorization': f'Bearer {superuser_token}'},
@@ -116,8 +116,8 @@ def test_update_user_integrity_error(client, user, superuser_token):
     assert response_update.json() == {'detail': 'User email already exists'}
 
 
-def test_update_user(client, user, superuser_token):
-    response = client.patch(
+def test_update_user(api_client, user, superuser_token):
+    response = api_client.patch(
         f'/users/{user.id}',
         json={'salary': 300},
         headers={'Authorization': f'Bearer {superuser_token}'},
@@ -135,8 +135,8 @@ def test_update_user(client, user, superuser_token):
     }
 
 
-def test_update_user_not_superuser(client, user, user_token):
-    response = client.patch(
+def test_update_user_not_superuser(api_client, user, user_token):
+    response = api_client.patch(
         f'/users/{user.id}',
         json={'salary': 300},
         headers={'Authorization': f'Bearer {user_token}'},
@@ -148,8 +148,8 @@ def test_update_user_not_superuser(client, user, user_token):
     }
 
 
-def test_update_user_password(client, user, superuser_token):
-    response = client.patch(
+def test_update_user_password(api_client, user, superuser_token):
+    response = api_client.patch(
         f'/users/{user.id}',
         json={'password': 'new_password'},
         headers={'Authorization': f'Bearer {superuser_token}'},

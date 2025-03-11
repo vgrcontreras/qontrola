@@ -6,12 +6,12 @@ from sqlalchemy.pool import StaticPool
 
 from src.api.dependencies import get_session
 from src.api.main import app
-from src.models import User, table_registry
+from src.models import Client, User, table_registry
 from src.security import get_password_hash
 
 
 @pytest.fixture
-def client(session):
+def api_client(session):
     def get_session_override():
         return session
 
@@ -82,8 +82,24 @@ def superuser(session):
 
 
 @pytest.fixture
-def user_token(client, user):
-    response = client.post(
+def db_client(session):
+    client_db = Client(
+        name='test',
+        client_type='test',
+        type_identifier='cnpj',
+        identifier='test',
+    )
+
+    session.add(client_db)
+    session.commit()
+    session.refresh(client_db)
+
+    return client_db
+
+
+@pytest.fixture
+def user_token(api_client, user):
+    response = api_client.post(
         '/token',
         data={'username': user.email, 'password': user.clean_password},
     )
@@ -92,8 +108,8 @@ def user_token(client, user):
 
 
 @pytest.fixture
-def superuser_token(client, superuser):
-    response = client.post(
+def superuser_token(api_client, superuser):
+    response = api_client.post(
         '/token',
         data={
             'username': superuser.email,

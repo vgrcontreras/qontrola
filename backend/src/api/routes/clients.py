@@ -1,0 +1,125 @@
+from http import HTTPStatus
+
+from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+
+from src.api.dependencies import T_Session, get_current_active_superuser
+from src.models import Client
+from src.schemas.base import Message
+from src.schemas.clients import (
+    ClientListRequest,
+    ClientRequestCreate,
+    ClientRequestUpdate,
+    ClientResponse,
+)
+
+router = APIRouter(prefix='/clients', tags=['clients'])
+
+
+@router.post(
+    path='/',
+    status_code=HTTPStatus.CREATED,
+    response_model=ClientResponse,
+    dependencies=[Depends(get_current_active_superuser)],
+)
+def create_client(
+    session: T_Session,
+    client_schema: ClientRequestCreate,
+):
+    db_client = session.scalar(
+        select(Client).where(Client.identifier == client_schema.identifier)
+    )
+
+    if db_client:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail='Client already exists'
+        )
+
+    client_data = client_schema.model_dump()
+
+    db_client = Client(**client_data)
+
+    session.add(db_client)
+    session.commit()
+    session.refresh(db_client)
+
+    return db_client
+
+
+@router.delete(
+    path='/{client_id}',
+    status_code=HTTPStatus.OK,
+    response_model=Message,
+    dependencies=[Depends(get_current_active_superuser)],
+)
+def delete_client(session: T_Session, client_id: int):
+    db_client = session.scalar(select(Client).where(Client.id == client_id))
+
+    if not db_client:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail="Client doesn't exists"
+        )
+
+    session.delete(db_client)
+    session.commit()
+
+    return {'message': 'Client deleted'}
+
+
+@router.patch(
+    path='/{client_id}',
+    status_code=HTTPStatus.OK,
+    response_model=ClientResponse,
+    dependencies=[Depends(get_current_active_superuser)],
+)
+def update_client(
+    session: T_Session, client_id: int, client: ClientRequestUpdate
+):
+    db_client = session.scalar(select(Client).where(Client.id == client_id))
+
+    if not db_client:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail='Client not found'
+        )
+
+    try:
+        for key, value in client.model_dump(exclude_unset=True).items():
+            setattr(db_client, key, value)
+
+        session.add(db_client)
+        session.commit()
+        session.refresh(db_client)
+
+    except IntegrityError:
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT, detail='Client already exists'
+        )
+
+    return db_client
+
+
+@router.get(
+    path='/{client_id}',
+    status_code=HTTPStatus.OK,
+    response_model=ClientResponse,
+)
+def get_client_by_id(session: T_Session, client_id: int):
+    db_client = session.scalar(select(Client).where(Client.id == client_id))
+
+    if not db_client:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail='Client not found'
+        )
+
+    return db_client
+
+
+@router.get(
+    path='/', status_code=HTTPStatus.OK, response_model=ClientListRequest
+)
+def read_all_clients(session: T_Session):
+    clients = session.scalars(select(Client))
+
+    return {'clients': clients}
