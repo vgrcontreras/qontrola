@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 
 from sqlalchemy import func
@@ -62,3 +62,23 @@ class Client:
         init=False, onupdate=func.now(), nullable=True
     )
     updated_by: Mapped[datetime] = mapped_column(default=None, nullable=True)
+
+
+@table_registry.mapped_as_dataclass
+class Project:
+    __tablename__ = 'projects'
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+    status_state: Mapped[str] = mapped_column(nullable=True)
+    project_value: Mapped[float] = mapped_column(nullable=True)
+    target_date: Mapped[date] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
+    created_by: Mapped[int]
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False, onupdate=func.now(), nullable=True
+    )
+    updated_by: Mapped[int] = mapped_column(default=None, nullable=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
