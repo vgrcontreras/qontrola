@@ -24,11 +24,11 @@ router = APIRouter(prefix='/clients', tags=['clients'])
     response_model=ClientResponse,
     dependencies=[Depends(get_current_active_superuser)],
 )
-def create_client(
+async def create_client(
     session: T_Session,
     client_schema: ClientRequestCreate,
 ):
-    db_client = session.scalar(
+    db_client = await session.scalar(
         select(Client).where(Client.identifier == client_schema.identifier)
     )
 
@@ -42,8 +42,8 @@ def create_client(
     db_client = Client(**client_data)
 
     session.add(db_client)
-    session.commit()
-    session.refresh(db_client)
+    await session.commit()
+    await session.refresh(db_client)
 
     return db_client
 
@@ -54,16 +54,18 @@ def create_client(
     response_model=Message,
     dependencies=[Depends(get_current_active_superuser)],
 )
-def delete_client(session: T_Session, client_id: int):
-    db_client = session.scalar(select(Client).where(Client.id == client_id))
+async def delete_client(session: T_Session, client_id: int):
+    db_client = await session.scalar(
+        select(Client).where(Client.id == client_id)
+    )
 
     if not db_client:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST, detail="Client doesn't exists"
         )
 
-    session.delete(db_client)
-    session.commit()
+    await session.delete(db_client)
+    await session.commit()
 
     return {'message': 'Client deleted'}
 
@@ -74,10 +76,12 @@ def delete_client(session: T_Session, client_id: int):
     response_model=ClientResponse,
     dependencies=[Depends(get_current_active_superuser)],
 )
-def update_client(
+async def update_client(
     session: T_Session, client_id: int, client: ClientRequestUpdate
 ):
-    db_client = session.scalar(select(Client).where(Client.id == client_id))
+    db_client = await session.scalar(
+        select(Client).where(Client.id == client_id)
+    )
 
     if not db_client:
         raise HTTPException(
@@ -89,8 +93,8 @@ def update_client(
             setattr(db_client, key, value)
 
         session.add(db_client)
-        session.commit()
-        session.refresh(db_client)
+        await session.commit()
+        await session.refresh(db_client)
 
     except IntegrityError:
         raise HTTPException(
@@ -105,8 +109,10 @@ def update_client(
     status_code=HTTPStatus.OK,
     response_model=ClientResponse,
 )
-def get_client_by_id(session: T_Session, client_id: int):
-    db_client = session.scalar(select(Client).where(Client.id == client_id))
+async def get_client_by_id(session: T_Session, client_id: int):
+    db_client = await session.scalar(
+        select(Client).where(Client.id == client_id)
+    )
 
     if not db_client:
         raise HTTPException(
@@ -119,7 +125,8 @@ def get_client_by_id(session: T_Session, client_id: int):
 @router.get(
     path='/', status_code=HTTPStatus.OK, response_model=ClientListRequest
 )
-def read_all_clients(session: T_Session):
-    clients = session.scalars(select(Client))
+async def read_all_clients(session: T_Session):
+    query = await session.scalars(select(Client))
+    clients = query.all()
 
     return {'clients': clients}

@@ -14,10 +14,10 @@ router = APIRouter(prefix='/token', tags=['token'])
 
 
 @router.post('/', status_code=HTTPStatus.OK, response_model=Token)
-def login_for_access_token(
+async def login_for_access_token(
     session: T_Session, form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    user_db = session.scalar(
+    user_db = await session.scalar(
         select(User).where(User.email == form_data.username)
     )
 

@@ -23,12 +23,12 @@ router = APIRouter(prefix='/projects', tags=['projects'])
     status_code=HTTPStatus.CREATED,
     response_model=ProjectResponse,
 )
-def create_project(
+async def create_project(
     session: T_Session,
     project: ProjectRequestCreate,
     current_user: User = Depends(get_current_user),
 ) -> Project:
-    project_db = session.scalar(
+    project_db = await session.scalar(
         select(Project).where(Project.name == project.name)
     )
 
@@ -44,8 +44,8 @@ def create_project(
     project_db = Project(**project_data)
 
     session.add(project_db)
-    session.commit()
-    session.refresh(project_db)
+    await session.commit()
+    await session.refresh(project_db)
 
     return project_db
 
@@ -56,8 +56,8 @@ def create_project(
     response_model=ProjectRequestGet,
     dependencies=[Depends(get_current_user)],
 )
-def read_project_by_id(session: T_Session, project_id: int) -> Project:
-    project_db = session.scalar(
+async def read_project_by_id(session: T_Session, project_id: int) -> Project:
+    project_db = await session.scalar(
         select(Project).where(Project.id == project_id)
     )
 
@@ -75,8 +75,8 @@ def read_project_by_id(session: T_Session, project_id: int) -> Project:
     response_model=ProjectRequestGetList,
     dependencies=[Depends(get_current_user)],
 )
-def read_all_projects(session: T_Session) -> list[Project]:
-    projects_db = session.scalars(select(Project))
+async def read_all_projects(session: T_Session) -> list[Project]:
+    projects_db = await session.scalars(select(Project))
 
     return {'projects': projects_db}
 
@@ -87,15 +87,15 @@ def read_all_projects(session: T_Session) -> list[Project]:
     response_model=Message,
     dependencies=[Depends(get_current_user)],
 )
-def delete_project(session: T_Session, project_id: int) -> dict:
-    project_db = session.scalar(
+async def delete_project(session: T_Session, project_id: int) -> dict:
+    project_db = await session.scalar(
         select(Project).where(Project.id == project_id)
     )
 
     project_db.is_active = False
 
     session.add(project_db)
-    session.commit()
+    await session.commit()
 
     return {'message': 'Project deleted'}
 
@@ -105,13 +105,13 @@ def delete_project(session: T_Session, project_id: int) -> dict:
     status_code=HTTPStatus.OK,
     response_model=ProjectRequestGet,
 )
-def update_project(
+async def update_project(
     session: T_Session,
     project_id: int,
     project: ProjectResquestUpdate,
     current_user: User = Depends(get_current_user),
 ) -> Project:
-    project_db = session.scalar(
+    project_db = await session.scalar(
         select(Project).where(Project.id == project_id)
     )
 
@@ -130,8 +130,8 @@ def update_project(
             setattr(project_db, key, value)
 
         session.add(project_db)
-        session.commit()
-        session.refresh(project_db)
+        await session.commit()
+        await session.refresh(project_db)
 
         return project_db
 

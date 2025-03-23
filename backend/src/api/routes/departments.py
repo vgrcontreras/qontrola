@@ -21,8 +21,8 @@ router = APIRouter(prefix='/departments', tags=['departments'])
     status_code=HTTPStatus.CREATED,
     response_model=DepartmentPublic,
 )
-def create_department(department: DepartmentSchema, session: T_Session):
-    db_department = session.scalar(
+async def create_department(department: DepartmentSchema, session: T_Session):
+    db_department = await session.scalar(
         select(Department).where(Department.name == department.name)
     )
 
@@ -35,8 +35,8 @@ def create_department(department: DepartmentSchema, session: T_Session):
     db_department = Department(name=department.name)
 
     session.add(db_department)
-    session.commit()
-    session.refresh(db_department)
+    await session.commit()
+    await session.refresh(db_department)
 
     return db_department
 
@@ -46,8 +46,8 @@ def create_department(department: DepartmentSchema, session: T_Session):
     status_code=HTTPStatus.OK,
     response_model=DepartmentPublic,
 )
-def read_department(department_name: str, session: T_Session):
-    db_department = session.scalar(
+async def read_department(department_name: str, session: T_Session):
+    db_department = await session.scalar(
         select(Department).where(Department.name == department_name)
     )
 
@@ -57,8 +57,9 @@ def read_department(department_name: str, session: T_Session):
 @router.get(
     '/', status_code=HTTPStatus.OK, response_model=DepartmentPublicList
 )
-def read_all_departments(session: T_Session):
-    db_departments = session.scalars(select(Department)).all()
+async def read_all_departments(session: T_Session):
+    query = await session.scalars(select(Department))
+    db_departments = query.all()
 
     return {'departments': db_departments}
 
@@ -66,8 +67,8 @@ def read_all_departments(session: T_Session):
 @router.delete(
     '/{department_name}', status_code=HTTPStatus.OK, response_model=Message
 )
-def delete_department(department_name: str, session: T_Session):
-    db_department = session.scalar(
+async def delete_department(department_name: str, session: T_Session):
+    db_department = await session.scalar(
         select(Department).where(Department.name == department_name)
     )
 
@@ -76,8 +77,8 @@ def delete_department(department_name: str, session: T_Session):
             status_code=HTTPStatus.NOT_FOUND, detail='Department not found'
         )
 
-    session.delete(db_department)
-    session.commit()
+    await session.delete(db_department)
+    await session.commit()
 
     return {'message': 'Department deleted'}
 
@@ -87,10 +88,10 @@ def delete_department(department_name: str, session: T_Session):
     status_code=HTTPStatus.OK,
     response_model=DepartmentPublic,
 )
-def update_department(
+async def update_department(
     department_id: int, department: DepartmentSchema, session: T_Session
 ):
-    db_department = session.scalar(
+    db_department = await session.scalar(
         select(Department).where(Department.id == department_id)
     )
 
@@ -102,8 +103,8 @@ def update_department(
     try:
         db_department.name = department.name
 
-        session.commit()
-        session.refresh(db_department)
+        await session.commit()
+        await session.refresh(db_department)
 
         return db_department
 
