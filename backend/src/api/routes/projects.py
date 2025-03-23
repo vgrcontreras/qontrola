@@ -76,7 +76,8 @@ async def read_project_by_id(session: T_Session, project_id: int) -> Project:
     dependencies=[Depends(get_current_user)],
 )
 async def read_all_projects(session: T_Session) -> list[Project]:
-    projects_db = await session.scalars(select(Project))
+    query = await session.scalars(select(Project))
+    projects_db = query.all()
 
     return {'projects': projects_db}
 
