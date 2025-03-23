@@ -1,18 +1,18 @@
 from http import HTTPStatus
 
-import pytest
+import pytest_asyncio
 
 from src.models import Department
 from src.schemas.departments import DepartmentPublic
 
 
-@pytest.fixture
-def department(session):
+@pytest_asyncio.fixture
+async def department(session):
     department = Department(name='test_department')
 
     session.add(department)
-    session.commit()
-    session.refresh(department)
+    await session.commit()
+    await session.refresh(department)
 
     return department
 

@@ -28,8 +28,10 @@ router = APIRouter(prefix='/users', tags=['users'])
     response_model=UserPublic,
     dependencies=[Depends(get_current_active_superuser)],
 )
-def create_user(user: UserSchema, session: T_Session):
-    db_user = session.scalar(select(User).where(User.email == user.email))
+async def create_user(user: UserSchema, session: T_Session):
+    db_user = await session.scalar(
+        select(User).where(User.email == user.email)
+    )
 
     if db_user is not None:
         raise HTTPException(
@@ -43,15 +45,15 @@ def create_user(user: UserSchema, session: T_Session):
     new_user = User(**user_attrs)
 
     session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
+    await session.commit()
+    await session.refresh(new_user)
 
     return new_user
 
 
 @router.get('/', status_code=HTTPStatus.OK, response_model=UserList)
-def read_users(session: T_Session):
-    db_users = session.scalars(select(User))
+async def read_users(session: T_Session):
+    db_users = await session.scalars(select(User))
 
     return {'users': db_users}
 
@@ -62,11 +64,11 @@ def read_users(session: T_Session):
     response_model=Message,
     dependencies=[Depends(get_current_active_superuser)],
 )
-def delete_user(
+async def delete_user(
     user_id: int,
     session: T_Session,
 ):
-    db_user = session.scalar(select(User).where(User.id == user_id))
+    db_user = await session.scalar(select(User).where(User.id == user_id))
 
     if db_user is None:
         raise HTTPException(
@@ -76,7 +78,7 @@ def delete_user(
     db_user.is_active = False
 
     session.add(db_user)
-    session.commit()
+    await session.commit()
 
     return {'message': 'User deleted'}
 
@@ -87,12 +89,12 @@ def delete_user(
     response_model=UserPublicSalary,
     dependencies=[Depends(get_current_active_superuser)],
 )
-def update_user(
+async def update_user(
     user_id: int,
     user: UserUpdate,
     session: T_Session,
 ):
-    db_user = session.scalar(select(User).where(User.id == user_id))
+    db_user = await session.scalar(select(User).where(User.id == user_id))
 
     if db_user is None:
         raise HTTPException(
@@ -109,8 +111,8 @@ def update_user(
             setattr(db_user, key, value)
 
         session.add(db_user)
-        session.commit()
-        session.refresh(db_user)
+        await session.commit()
+        await session.refresh(db_user)
 
         return db_user
 

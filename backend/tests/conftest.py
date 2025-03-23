@@ -1,7 +1,11 @@
+from contextlib import contextmanager
+from datetime import datetime
+
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy import event
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 from src.api.dependencies import get_session
@@ -10,7 +14,7 @@ from src.models import Client, User, table_registry
 from src.security import get_password_hash
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def api_client(session):
     def get_session_override():
         return session
@@ -22,23 +26,45 @@ def api_client(session):
     app.dependency_overrides.clear()
 
 
+@contextmanager
+def _mock_db_time(*, model, time=datetime(2025, 1, 1)):
+    def fake_time_hook(mapper, connection, target):
+        if hasattr(target, 'created_at'):
+            target.created_at = time
+        if hasattr(target, 'updated_at'):
+            target.updated_at = time
+
+    event.listen(model, 'before_insert', fake_time_hook)
+
+    yield time
+
+    event.remove(model, 'before_insert', fake_time_hook)
+
+
 @pytest.fixture
-def session():
-    engine = create_engine(
-        'sqlite:///:memory:',
+def mock_db_time():
+    return _mock_db_time
+
+
+@pytest_asyncio.fixture
+async def session():
+    engine = create_async_engine(
+        'sqlite+aiosqlite:///:memory:',
         connect_args={'check_same_thread': False},
         poolclass=StaticPool,
     )
-    table_registry.metadata.create_all(engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.create_all)
 
-    with Session(engine) as session:
+    async with AsyncSession(engine, expire_on_commit=False) as session:
         yield session
 
-    table_registry.metadata.drop_all(engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.drop_all)
 
 
-@pytest.fixture
-def user(session):
+@pytest_asyncio.fixture
+async def user(session):
     password = 'test_password'
 
     user = User(
@@ -51,16 +77,16 @@ def user(session):
     )
 
     session.add(user)
-    session.commit()
-    session.refresh(user)
+    await session.commit()
+    await session.refresh(user)
 
     user.clean_password = password
 
     return user
 
 
-@pytest.fixture
-def superuser(session):
+@pytest_asyncio.fixture
+async def superuser(session):
     password = 'admin'
 
     super_user = User(
@@ -73,16 +99,16 @@ def superuser(session):
     )
 
     session.add(super_user)
-    session.commit()
-    session.refresh(super_user)
+    await session.commit()
+    await session.refresh(super_user)
 
     super_user.clean_password = password
 
     return super_user
 
 
-@pytest.fixture
-def db_client(session):
+@pytest_asyncio.fixture
+async def db_client(session):
     client_db = Client(
         name='test',
         client_type='test',
@@ -91,13 +117,13 @@ def db_client(session):
     )
 
     session.add(client_db)
-    session.commit()
-    session.refresh(client_db)
+    await session.commit()
+    await session.refresh(client_db)
 
     return client_db
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def user_token(api_client, user):
     response = api_client.post(
         '/token',
@@ -107,7 +133,7 @@ def user_token(api_client, user):
     return response.json()['access_token']
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def superuser_token(api_client, superuser):
     response = api_client.post(
         '/token',

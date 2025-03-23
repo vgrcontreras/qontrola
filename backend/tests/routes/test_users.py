@@ -12,6 +12,7 @@ def test_create_user(api_client, superuser_token):
             'email': 'test@test.com',
             'password': 'test_password',
             'salary': 1000,
+            'is_superuser': False,
         },
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
