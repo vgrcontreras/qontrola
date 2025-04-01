@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 
 from src.models import IdentifierType
@@ -15,7 +17,7 @@ class ClientRequestCreate(BaseModel):
 
 
 class ClientResponse(BaseModel):
-    id: int
+    id: UUID
     name: str
     client_type: str
     type_identifier: IdentifierType

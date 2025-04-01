@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -11,19 +12,19 @@ class ProjectRequestCreate(BaseModel):
 
 
 class ProjectResponse(BaseModel):
-    id: int
+    id: UUID
     name: str
     status_state: str
     project_value: float
     target_date: date
     created_at: datetime
-    created_by: int
+    created_by: UUID
     is_active: bool
 
 
 class ProjectRequestGet(ProjectResponse):
     updated_at: datetime | None
-    updated_by: int | None
+    updated_by: UUID | None
 
 
 class ProjectRequestGetList(BaseModel):

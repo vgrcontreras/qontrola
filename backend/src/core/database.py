@@ -23,7 +23,7 @@ async def init_db(session: AsyncSession) -> None:
             is_superuser=True,
         )
 
-        await session.add(superuser_db)
+        session.add(superuser_db)
         await session.commit()
         await session.refresh(superuser_db)
 

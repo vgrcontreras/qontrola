@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -56,7 +57,7 @@ async def create_project(
     response_model=ProjectRequestGet,
     dependencies=[Depends(get_current_user)],
 )
-async def read_project_by_id(session: T_Session, project_id: int) -> Project:
+async def read_project_by_id(session: T_Session, project_id: UUID) -> Project:
     project_db = await session.scalar(
         select(Project).where(Project.id == project_id)
     )
@@ -88,10 +89,15 @@ async def read_all_projects(session: T_Session) -> list[Project]:
     response_model=Message,
     dependencies=[Depends(get_current_user)],
 )
-async def delete_project(session: T_Session, project_id: int) -> dict:
+async def delete_project(session: T_Session, project_id: UUID) -> dict:
     project_db = await session.scalar(
         select(Project).where(Project.id == project_id)
     )
+
+    if not project_db:
+        raise HTTPException(
+            detail="Project doesn't exists", status_code=HTTPStatus.BAD_REQUEST
+        )
 
     project_db.is_active = False
 
@@ -108,7 +114,7 @@ async def delete_project(session: T_Session, project_id: int) -> dict:
 )
 async def update_project(
     session: T_Session,
-    project_id: int,
+    project_id: UUID,
     project: ProjectResquestUpdate,
     current_user: User = Depends(get_current_user),
 ) -> Project:

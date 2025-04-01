@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -65,7 +66,7 @@ async def read_users(session: T_Session):
     dependencies=[Depends(get_current_active_superuser)],
 )
 async def delete_user(
-    user_id: int,
+    user_id: UUID,
     session: T_Session,
 ):
     db_user = await session.scalar(select(User).where(User.id == user_id))
@@ -90,7 +91,7 @@ async def delete_user(
     dependencies=[Depends(get_current_active_superuser)],
 )
 async def update_user(
-    user_id: int,
+    user_id: UUID,
     user: UserUpdate,
     session: T_Session,
 ):

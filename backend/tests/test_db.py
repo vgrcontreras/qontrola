@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from uuid import UUID
 
 import pytest
 from sqlalchemy import select
@@ -18,9 +19,9 @@ async def test_create_department_db(session, mock_db_time):
         select(Department).where(Department.name == 'test_department')
     )
 
-    assert asdict(department_db) == {
-        'id': 1,
-        'name': 'test_department',
-        'created_at': time,
-        'updated_at': time,
-    }
+    department_dict = asdict(department_db)
+
+    assert isinstance(department_dict['id'], UUID)
+    assert department_dict['name'] == 'test_department'
+    assert department_dict['created_at'] == time
+    assert department_dict['updated_at'] == time

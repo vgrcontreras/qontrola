@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import UUID
 
 import pytest_asyncio
 
@@ -23,7 +24,9 @@ def test_create_department(api_client):
     )
 
     assert response.status_code == HTTPStatus.CREATED
-    assert response.json() == {'id': 1, 'name': 'test_department'}
+    data = response.json()
+    assert data['name'] == 'test_department'
+    assert UUID(data['id']) is not None
 
 
 def test_create_department_already_exists(api_client, department):
@@ -39,8 +42,10 @@ def test_read_test_department(api_client, department):
     department_schema = DepartmentPublic.model_validate(
         department
     ).model_dump()
+    # Convert UUID to string for comparison with JSON response
+    department_schema['id'] = str(department_schema['id'])
 
-    response = api_client.get('/departments/test_department')
+    response = api_client.get(f'/departments/{department.id}')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == department_schema
@@ -57,6 +62,9 @@ def test_read_departments_with_department(api_client, department):
     department_schema = DepartmentPublic.model_validate(
         department
     ).model_dump()
+    # Convert UUID to string for comparison with JSON response
+    department_schema['id'] = str(department_schema['id'])
+
     response = api_client.get('/departments')
 
     assert response.status_code == HTTPStatus.OK
@@ -64,14 +72,16 @@ def test_read_departments_with_department(api_client, department):
 
 
 def test_delete_department(api_client, department):
-    response = api_client.delete('/departments/test_department')
+    response = api_client.delete(f'/departments/{department.id}')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'Department deleted'}
 
 
 def test_delete_department_not_exists(api_client):
-    response = api_client.delete('/departments/test_department')
+    response = api_client.delete(
+        url='/departments/123e4567-e89b-12d3-a456-426614174000'
+    )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Department not found'}
@@ -79,16 +89,20 @@ def test_delete_department_not_exists(api_client):
 
 def test_update_department(api_client, department):
     response = api_client.put(
-        'departments/1', json={'name': 'test_department_updated'}
+        f'departments/{department.id}',
+        json={'name': 'test_department_updated'},
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'id': 1, 'name': 'test_department_updated'}
+    data = response.json()
+    assert data['name'] == 'test_department_updated'
+    assert UUID(data['id']) == department.id
 
 
 def test_update_department_not_found(api_client):
     response = api_client.put(
-        '/departments/1', json={'name': 'test_department'}
+        '/departments/123e4567-e89b-12d3-a456-426614174000',
+        json={'name': 'test_department'},
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND

@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
@@ -42,14 +43,20 @@ async def create_department(department: DepartmentSchema, session: T_Session):
 
 
 @router.get(
-    '/{department_name}',
+    '/{department_id}',
     status_code=HTTPStatus.OK,
     response_model=DepartmentPublic,
 )
-async def read_department(department_name: str, session: T_Session):
+async def read_department(department_id: UUID, session: T_Session):
     db_department = await session.scalar(
-        select(Department).where(Department.name == department_name)
+        select(Department).where(Department.id == department_id)
     )
+
+    if not db_department:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Department doesn't exists",
+        )
 
     return db_department
 
@@ -65,11 +72,11 @@ async def read_all_departments(session: T_Session):
 
 
 @router.delete(
-    '/{department_name}', status_code=HTTPStatus.OK, response_model=Message
+    '/{department_id}', status_code=HTTPStatus.OK, response_model=Message
 )
-async def delete_department(department_name: str, session: T_Session):
+async def delete_department(department_id: UUID, session: T_Session):
     db_department = await session.scalar(
-        select(Department).where(Department.name == department_name)
+        select(Department).where(Department.id == department_id)
     )
 
     if db_department is None:
@@ -89,7 +96,7 @@ async def delete_department(department_name: str, session: T_Session):
     response_model=DepartmentPublic,
 )
 async def update_department(
-    department_id: int, department: DepartmentSchema, session: T_Session
+    department_id: UUID, department: DepartmentSchema, session: T_Session
 ):
     db_department = await session.scalar(
         select(Department).where(Department.id == department_id)
