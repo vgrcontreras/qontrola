@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import UUID
 
 from src.schemas.users import UserPublic
 
@@ -18,14 +19,13 @@ def test_create_user(api_client, superuser_token):
     )
 
     assert response.status_code == HTTPStatus.CREATED
-    assert response.json() == {
-        'id': 2,
-        'first_name': 'test',
-        'last_name': 'test',
-        'email': 'test@test.com',
-        'is_superuser': False,
-        'is_active': True,
-    }
+    data = response.json()
+    assert data['first_name'] == 'test'
+    assert data['last_name'] == 'test'
+    assert data['email'] == 'test@test.com'
+    assert data['is_superuser'] is False
+    assert data['is_active'] is True
+    assert UUID(data['id']) is not None
 
 
 def test_create_user_already_exists(api_client, superuser_token):
@@ -58,7 +58,8 @@ def test_delete_user(api_client, user, superuser_token):
 
 def test_delete_user_not_found(api_client, superuser_token):
     response = api_client.delete(
-        '/users/2', headers={'Authorization': f'Bearer {superuser_token}'}
+        '/users/123e4567-e89b-12d3-a456-426614174000',
+        headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -74,6 +75,8 @@ def test_read_users(api_client):
 
 def test_read_users_with_user(api_client, user):
     user_schema = UserPublic.model_validate(user).model_dump()
+    # Convert UUID to string for comparison with JSON response
+    user_schema['id'] = str(user_schema['id'])
     response = api_client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
@@ -82,7 +85,7 @@ def test_read_users_with_user(api_client, user):
 
 def test_update_user_not_found(api_client, superuser_token):
     response = api_client.patch(
-        '/users/2',
+        '/users/123e4567-e89b-12d3-a456-426614174000',
         json={'salary': 300},
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
@@ -124,16 +127,17 @@ def test_update_user(api_client, user, superuser_token):
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
+    SALARY = 300.0
+
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'id': 1,
-        'first_name': 'test',
-        'last_name': 'test',
-        'email': 'test@test.com',
-        'salary': 300.0,
-        'is_superuser': False,
-        'is_active': True,
-    }
+    data = response.json()
+    assert UUID(data['id']) == user.id
+    assert data['first_name'] == 'test'
+    assert data['last_name'] == 'test'
+    assert data['email'] == 'test@test.com'
+    assert data['salary'] == SALARY
+    assert data['is_superuser'] is False
+    assert data['is_active'] is True
 
 
 def test_update_user_not_superuser(api_client, user, user_token):
@@ -156,13 +160,14 @@ def test_update_user_password(api_client, user, superuser_token):
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
+    SALARY = 1000.0
+
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'id': 1,
-        'first_name': 'test',
-        'last_name': 'test',
-        'email': 'test@test.com',
-        'salary': 1000.0,
-        'is_superuser': False,
-        'is_active': True,
-    }
+    data = response.json()
+    assert UUID(data['id']) == user.id
+    assert data['first_name'] == 'test'
+    assert data['last_name'] == 'test'
+    assert data['email'] == 'test@test.com'
+    assert data['salary'] == SALARY
+    assert data['is_superuser'] is False
+    assert data['is_active'] is True

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -10,7 +12,7 @@ class DepartmentSchema(BaseModel):
 
 
 class DepartmentPublic(BaseModel):
-    id: int
+    id: UUID
     name: str
     model_config = ConfigDict(from_attributes=True)
 

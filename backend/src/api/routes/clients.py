@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
@@ -54,7 +55,7 @@ async def create_client(
     response_model=Message,
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def delete_client(session: T_Session, client_id: int):
+async def delete_client(session: T_Session, client_id: UUID):
     db_client = await session.scalar(
         select(Client).where(Client.id == client_id)
     )
@@ -77,7 +78,7 @@ async def delete_client(session: T_Session, client_id: int):
     dependencies=[Depends(get_current_active_superuser)],
 )
 async def update_client(
-    session: T_Session, client_id: int, client: ClientRequestUpdate
+    session: T_Session, client_id: UUID, client: ClientRequestUpdate
 ):
     db_client = await session.scalar(
         select(Client).where(Client.id == client_id)
@@ -109,7 +110,7 @@ async def update_client(
     status_code=HTTPStatus.OK,
     response_model=ClientResponse,
 )
-async def get_client_by_id(session: T_Session, client_id: int):
+async def get_client_by_id(session: T_Session, client_id: UUID):
     db_client = await session.scalar(
         select(Client).where(Client.id == client_id)
     )

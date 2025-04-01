@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import UUID
 
 
 def test_create_client(api_client, superuser_token) -> None:
@@ -14,13 +15,13 @@ def test_create_client(api_client, superuser_token) -> None:
     )
 
     assert response.status_code == HTTPStatus.CREATED
-    assert response.json() == {
-        'id': 1,
-        'name': 'client1',
-        'client_type': 'velas',
-        'type_identifier': 'cnpj',
-        'identifier': 'test',
-    }
+    data = response.json()
+    assert data['name'] == 'client1'
+    assert data['client_type'] == 'velas'
+    assert data['type_identifier'] == 'cnpj'
+    assert data['identifier'] == 'test'
+    # Verify UUID format
+    assert UUID(data['id']) is not None
 
 
 def test_create_client_already_exists(
@@ -53,7 +54,7 @@ def test_delete_client(api_client, db_client, superuser_token) -> None:
 
 def test_delete_client_not_found(api_client, superuser_token) -> None:
     response = api_client.delete(
-        url='/clients/1',
+        url='/clients/123e4567-e89b-12d3-a456-426614174000',
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
@@ -63,7 +64,7 @@ def test_delete_client_not_found(api_client, superuser_token) -> None:
 
 def test_update_client_not_found(api_client, superuser_token) -> None:
     response = api_client.patch(
-        url='/clients/1',
+        url='/clients/123e4567-e89b-12d3-a456-426614174000',
         json={'name': 'test_update_name'},
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
@@ -80,13 +81,12 @@ def test_update_client(api_client, db_client, superuser_token) -> None:
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'id': 1,
-        'name': 'test_updated_name',
-        'client_type': 'test',
-        'type_identifier': 'cnpj',
-        'identifier': 'test',
-    }
+    data = response.json()
+    assert data['name'] == 'test_updated_name'
+    assert data['client_type'] == 'test'
+    assert data['type_identifier'] == 'cnpj'
+    assert data['identifier'] == 'test'
+    assert UUID(data['id']) == db_client.id
 
 
 def test_update_client_integrity_error(
@@ -125,17 +125,18 @@ def test_get_client_by_id(session, db_client, api_client) -> None:
     response = api_client.get(url=f'/clients/{db_client.id}')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'id': db_client.id,
-        'name': db_client.name,
-        'client_type': db_client.client_type,
-        'type_identifier': db_client.type_identifier,
-        'identifier': db_client.identifier,
-    }
+    data = response.json()
+    assert UUID(data['id']) == db_client.id
+    assert data['name'] == db_client.name
+    assert data['client_type'] == db_client.client_type
+    assert data['type_identifier'] == db_client.type_identifier
+    assert data['identifier'] == db_client.identifier
 
 
 def test_get_client_by_id_not_found(session, api_client) -> None:
-    response = api_client.get(url='/clients/1')
+    response = api_client.get(
+        url='/clients/123e4567-e89b-12d3-a456-426614174000'
+    )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == {'detail': 'Client not found'}
