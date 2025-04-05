@@ -59,6 +59,7 @@ async def register_tenant(
             email=admin_data.email,
             password=hashed_password,
             is_superuser=True,
+            tenant=new_tenant,
             tenant_id=new_tenant.id,
         )
 
