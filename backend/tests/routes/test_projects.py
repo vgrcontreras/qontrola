@@ -8,7 +8,7 @@ from src.models import Project
 
 
 @pytest_asyncio.fixture
-async def db_project(session, superuser) -> Project:
+async def db_project(session, superuser, tenant) -> Project:
     project = Project(
         name='test_project',
         status_state='active',
@@ -16,6 +16,8 @@ async def db_project(session, superuser) -> Project:
         target_date=date(2024, 12, 31),
         created_by=superuser.id,
         is_active=True,
+        tenant_id=tenant.id,
+        tenant=tenant,
     )
     session.add(project)
     await session.commit()
@@ -84,8 +86,8 @@ def test_delete_project_not_found(api_client, superuser_token) -> None:
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': "Project doesn't exists"}
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': "Project doesn't exist"}
 
 
 def test_update_project_not_found(api_client, superuser_token) -> None:
@@ -95,8 +97,8 @@ def test_update_project_not_found(api_client, superuser_token) -> None:
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': "Project doesn't exists"}
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': "Project doesn't exist"}
 
 
 def test_update_project(api_client, db_project, superuser_token) -> None:
@@ -184,5 +186,5 @@ def test_get_project_by_id_not_found(
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': "Project doesn't exists"}
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': "Project doesn't exist"}

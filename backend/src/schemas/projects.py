@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ProjectRequestCreate(BaseModel):
@@ -19,12 +19,17 @@ class ProjectResponse(BaseModel):
     target_date: date
     created_at: datetime
     created_by: UUID
+    tenant_id: UUID
     is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProjectRequestGet(ProjectResponse):
     updated_at: datetime | None
     updated_by: UUID | None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProjectRequestGetList(BaseModel):

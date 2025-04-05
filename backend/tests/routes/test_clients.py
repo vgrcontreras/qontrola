@@ -1,6 +1,8 @@
 from http import HTTPStatus
 from uuid import UUID
 
+from src.schemas.clients import ClientResponse
+
 
 def test_create_client(api_client, superuser_token) -> None:
     response = api_client.post(
@@ -58,8 +60,8 @@ def test_delete_client_not_found(api_client, superuser_token) -> None:
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': "Client doesn't exists"}
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': "Client doesn't exist"}
 
 
 def test_update_client_not_found(api_client, superuser_token) -> None:
@@ -69,7 +71,7 @@ def test_update_client_not_found(api_client, superuser_token) -> None:
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Client not found'}
 
 
@@ -114,11 +116,28 @@ def test_update_client_integrity_error(
     assert response.json() == {'detail': 'Client already exists'}
 
 
-def test_get_all_clients(session, api_client) -> None:
+def test_get_all_clients(session, api_client, db_client) -> None:
+    client_schema = ClientResponse.model_validate(db_client).model_dump()
     response = api_client.get(url='/clients')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'clients': []}
+    # Get the clients list and verify it contains our client data
+    response_data = response.json()
+    assert 'clients' in response_data
+    assert len(response_data['clients']) == 1
+
+    # Check important fields individually rather than comparing entire objects
+    response_client = response_data['clients'][0]
+    assert response_client['name'] == client_schema['name']
+    assert response_client['client_type'] == client_schema['client_type']
+    assert response_client['identifier'] == client_schema['identifier']
+    type_id = client_schema['type_identifier']
+    assert response_client['type_identifier'] == type_id
+    assert response_client['is_active'] == client_schema['is_active']
+    # UUID fields may be serialized differently (string vs UUID objects)
+    tenant_id1 = UUID(response_client['tenant_id'])
+    tenant_id2 = UUID(str(client_schema['tenant_id']))
+    assert tenant_id1 == tenant_id2
 
 
 def test_get_client_by_id(session, db_client, api_client) -> None:
@@ -138,5 +157,5 @@ def test_get_client_by_id_not_found(session, api_client) -> None:
         url='/clients/123e4567-e89b-12d3-a456-426614174000'
     )
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Client not found'}

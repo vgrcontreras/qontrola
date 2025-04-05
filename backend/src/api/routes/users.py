@@ -1,123 +1,58 @@
 from http import HTTPStatus
-from uuid import UUID
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from fastapi import APIRouter, HTTPException
 
-from src.api.dependencies import (
-    T_Session,
-    get_current_active_superuser,
-)
-from src.models import User
+from src.api.dependencies import CurrentUser, T_Session
 from src.schemas.base import Message
-from src.schemas.users import (
-    UserList,
-    UserPublic,
-    UserPublicSalary,
-    UserSchema,
-    UserUpdate,
-)
+from src.schemas.users import PasswordChange, UserPublic
 from src.security import get_password_hash
 
-router = APIRouter(prefix='/users', tags=['users'])
+router = APIRouter()
 
 
-@router.post(
-    '/',
-    status_code=HTTPStatus.CREATED,
-    response_model=UserPublic,
-    dependencies=[Depends(get_current_active_superuser)],
-)
-async def create_user(user: UserSchema, session: T_Session):
-    db_user = await session.scalar(
-        select(User).where(User.email == user.email)
-    )
-
-    if db_user is not None:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail='User already exists'
-        )
-
-    user_attrs = user.model_dump()
-
-    user_attrs['password'] = get_password_hash(user.password)
-
-    new_user = User(**user_attrs)
-
-    session.add(new_user)
-    await session.commit()
-    await session.refresh(new_user)
-
-    return new_user
+@router.get('/me', response_model=UserPublic)
+async def get_user_info_me(current_user: CurrentUser) -> Any:
+    """
+    Get own account details.
+    """
+    return current_user
 
 
-@router.get('/', status_code=HTTPStatus.OK, response_model=UserList)
-async def read_users(session: T_Session):
-    db_users = await session.scalars(select(User))
-
-    return {'users': db_users}
-
-
-@router.delete(
-    '/{user_id}',
-    status_code=HTTPStatus.OK,
-    response_model=Message,
-    dependencies=[Depends(get_current_active_superuser)],
-)
-async def delete_user(
-    user_id: UUID,
+@router.patch('/me/change-password', response_model=Message)
+async def update_password_me(
     session: T_Session,
-):
-    db_user = await session.scalar(select(User).where(User.id == user_id))
-
-    if db_user is None:
+    passwords: PasswordChange,
+    current_user: CurrentUser,
+) -> Any:
+    """
+    Change own password
+    """
+    if passwords.password != passwords.password_confirmation:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail='User Not Found'
+            status_code=HTTPStatus.BAD_REQUEST, detail='Passwords dont match.'
         )
 
-    db_user.is_active = False
+    # Set the new password with hashing
+    current_user.password = get_password_hash(passwords.password)
 
-    session.add(db_user)
+    session.add(current_user)
     await session.commit()
 
-    return {'message': 'User deleted'}
+    return {'message': 'Password has been changed!'}
 
 
-@router.patch(
-    '/{user_id}',
-    status_code=HTTPStatus.OK,
-    response_model=UserPublicSalary,
-    dependencies=[Depends(get_current_active_superuser)],
-)
-async def update_user(
-    user_id: UUID,
-    user: UserUpdate,
-    session: T_Session,
-):
-    db_user = await session.scalar(select(User).where(User.id == user_id))
+@router.delete('/me', response_model=Message)
+async def delete_user_me(
+    session: T_Session, current_user: CurrentUser
+) -> Message:
+    """
+    Delete own account.
+    """
+    # Soft delete - just mark as inactive
+    current_user.is_active = False
 
-    if db_user is None:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail='User Not Found'
-        )
+    session.add(current_user)
+    await session.commit()
 
-    try:
-        user_data = user.model_dump(exclude_unset=True)
-
-        if 'password' in user_data:
-            user_data['password'] = get_password_hash(user_data['password'])
-
-        for key, value in user_data.items():
-            setattr(db_user, key, value)
-
-        session.add(db_user)
-        await session.commit()
-        await session.refresh(db_user)
-
-        return db_user
-
-    except IntegrityError:
-        raise HTTPException(
-            status_code=HTTPStatus.CONFLICT, detail='User email already exists'
-        )
+    return Message(message='User deleted.')

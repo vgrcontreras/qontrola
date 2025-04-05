@@ -5,8 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from src.api.dependencies import T_Session, get_current_user
-from src.models import Project, User
+from src.api.dependencies import (
+    CurrentTenant,
+    CurrentUser,
+    T_Session,
+    get_current_active_superuser,
+)
+from src.models import Project
 from src.schemas.base import Message
 from src.schemas.projects import (
     ProjectRequestCreate,
@@ -16,7 +21,7 @@ from src.schemas.projects import (
     ProjectResquestUpdate,
 )
 
-router = APIRouter(prefix='/projects', tags=['projects'])
+router = APIRouter()
 
 
 @router.post(
@@ -27,10 +32,15 @@ router = APIRouter(prefix='/projects', tags=['projects'])
 async def create_project(
     session: T_Session,
     project: ProjectRequestCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: CurrentUser,
+    tenant: CurrentTenant,
 ) -> Project:
+    """Create a new project within the current tenant."""
+    # Check if project exists in this tenant
     project_db = await session.scalar(
-        select(Project).where(Project.name == project.name)
+        select(Project).where(
+            Project.name == project.name, Project.tenant_id == tenant.id
+        )
     )
 
     if project_db:
@@ -41,6 +51,8 @@ async def create_project(
     project_data = project.model_dump()
 
     project_data['created_by'] = current_user.id
+    project_data['tenant_id'] = tenant.id
+    project_data['tenant'] = tenant
 
     project_db = Project(**project_data)
 
@@ -55,16 +67,24 @@ async def create_project(
     path='/{project_id}',
     status_code=HTTPStatus.OK,
     response_model=ProjectRequestGet,
-    dependencies=[Depends(get_current_user)],
 )
-async def read_project_by_id(session: T_Session, project_id: UUID) -> Project:
-    project_db = await session.scalar(
-        select(Project).where(Project.id == project_id)
+async def read_project_by_id(
+    session: T_Session,
+    project_id: UUID,
+    tenant: CurrentTenant,
+) -> Project:
+    """
+    Get a specific project from the current tenant.
+    """
+    query = select(Project).where(
+        Project.id == project_id, Project.tenant_id == tenant.id
     )
+
+    project_db = await session.scalar(query)
 
     if not project_db:
         raise HTTPException(
-            detail="Project doesn't exists", status_code=HTTPStatus.BAD_REQUEST
+            detail="Project doesn't exist", status_code=HTTPStatus.NOT_FOUND
         )
 
     return project_db
@@ -74,32 +94,49 @@ async def read_project_by_id(session: T_Session, project_id: UUID) -> Project:
     path='/',
     status_code=HTTPStatus.OK,
     response_model=ProjectRequestGetList,
-    dependencies=[Depends(get_current_user)],
 )
-async def read_all_projects(session: T_Session) -> list[Project]:
-    query = await session.scalars(select(Project))
-    projects_db = query.all()
+async def read_all_projects(
+    session: T_Session,
+    tenant: CurrentTenant,
+) -> list[Project]:
+    """
+    Get all projects within the current tenant.
+    """
+    query = select(Project).where(Project.tenant_id == tenant.id)
 
-    return {'projects': projects_db}
+    projects_db = await session.scalars(query)
+
+    return {'projects': projects_db.all()}
 
 
 @router.delete(
     path='/{project_id}',
     status_code=HTTPStatus.OK,
     response_model=Message,
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(get_current_active_superuser)],
 )
-async def delete_project(session: T_Session, project_id: UUID) -> dict:
+async def delete_project(
+    session: T_Session,
+    project_id: UUID,
+    current_user: CurrentUser,
+    tenant: CurrentTenant,
+) -> dict:
+    """
+    Delete (deactivate) a project from the current tenant.
+    """
     project_db = await session.scalar(
-        select(Project).where(Project.id == project_id)
+        select(Project).where(
+            Project.id == project_id, Project.tenant_id == tenant.id
+        )
     )
 
     if not project_db:
         raise HTTPException(
-            detail="Project doesn't exists", status_code=HTTPStatus.BAD_REQUEST
+            detail="Project doesn't exist", status_code=HTTPStatus.NOT_FOUND
         )
 
     project_db.is_active = False
+    project_db.updated_by = current_user.id
 
     session.add(project_db)
     await session.commit()
@@ -116,17 +153,21 @@ async def update_project(
     session: T_Session,
     project_id: UUID,
     project: ProjectResquestUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: CurrentUser,
+    tenant: CurrentTenant,
 ) -> Project:
+    """Update a project within the current tenant."""
     project_db = await session.scalar(
-        select(Project).where(Project.id == project_id)
+        select(Project).where(
+            Project.id == project_id, Project.tenant_id == tenant.id
+        )
     )
 
     try:
         if not project_db:
             raise HTTPException(
-                detail="Project doesn't exists",
-                status_code=HTTPStatus.BAD_REQUEST,
+                detail="Project doesn't exist",
+                status_code=HTTPStatus.NOT_FOUND,
             )
 
         project_data = project.model_dump(exclude_unset=True)

@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.models import IdentifierType
 
@@ -22,6 +22,10 @@ class ClientResponse(BaseModel):
     client_type: str
     type_identifier: IdentifierType
     identifier: str
+    tenant_id: UUID
+    is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClientRequestUpdate(BaseModel):

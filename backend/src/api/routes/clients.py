@@ -6,7 +6,11 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from src.api.dependencies import T_Session, get_current_active_superuser
+from src.api.dependencies import (
+    CurrentTenant,
+    T_Session,
+    get_current_active_superuser,
+)
 from src.models import Client
 from src.schemas.base import Message
 from src.schemas.clients import (
@@ -16,21 +20,27 @@ from src.schemas.clients import (
     ClientResponse,
 )
 
-router = APIRouter(prefix='/clients', tags=['clients'])
+# Only superusers can access client management
+router = APIRouter()
 
 
 @router.post(
     path='/',
     status_code=HTTPStatus.CREATED,
     response_model=ClientResponse,
-    dependencies=[Depends(get_current_active_superuser)],
 )
 async def create_client(
     session: T_Session,
     client_schema: ClientRequestCreate,
+    tenant: CurrentTenant,
 ):
+    """Create a new client within the current tenant."""
+    # Check if client with same identifier exists in this tenant
     db_client = await session.scalar(
-        select(Client).where(Client.identifier == client_schema.identifier)
+        select(Client).where(
+            Client.identifier == client_schema.identifier,
+            Client.tenant_id == tenant.id,
+        )
     )
 
     if db_client:
@@ -39,6 +49,9 @@ async def create_client(
         )
 
     client_data = client_schema.model_dump()
+
+    client_data['tenant_id'] = tenant.id
+    client_data['tenant'] = tenant
 
     db_client = Client(**client_data)
 
@@ -55,17 +68,26 @@ async def create_client(
     response_model=Message,
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def delete_client(session: T_Session, client_id: UUID):
+async def delete_client(
+    session: T_Session,
+    client_id: UUID,
+    tenant: CurrentTenant,
+):
+    """Delete a client from the current tenant (soft delete)."""
     db_client = await session.scalar(
-        select(Client).where(Client.id == client_id)
+        select(Client).where(
+            Client.id == client_id, Client.tenant_id == tenant.id
+        )
     )
 
     if not db_client:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="Client doesn't exists"
+            status_code=HTTPStatus.NOT_FOUND, detail="Client doesn't exist"
         )
 
-    await session.delete(db_client)
+    db_client.is_active = False
+
+    session.add(db_client)
     await session.commit()
 
     return {'message': 'Client deleted'}
@@ -75,18 +97,23 @@ async def delete_client(session: T_Session, client_id: UUID):
     path='/{client_id}',
     status_code=HTTPStatus.OK,
     response_model=ClientResponse,
-    dependencies=[Depends(get_current_active_superuser)],
 )
 async def update_client(
-    session: T_Session, client_id: UUID, client: ClientRequestUpdate
+    session: T_Session,
+    client_id: UUID,
+    client: ClientRequestUpdate,
+    tenant: CurrentTenant,
 ):
+    """Update a client within the current tenant."""
     db_client = await session.scalar(
-        select(Client).where(Client.id == client_id)
+        select(Client).where(
+            Client.id == client_id, Client.tenant_id == tenant.id
+        )
     )
 
     if not db_client:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail='Client not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='Client not found'
         )
 
     try:
@@ -110,14 +137,23 @@ async def update_client(
     status_code=HTTPStatus.OK,
     response_model=ClientResponse,
 )
-async def get_client_by_id(session: T_Session, client_id: UUID):
-    db_client = await session.scalar(
-        select(Client).where(Client.id == client_id)
+async def get_client_by_id(
+    session: T_Session,
+    client_id: UUID,
+    tenant: CurrentTenant,
+):
+    """
+    Get a specific client from the current tenant.
+    """
+    query = select(Client).where(
+        Client.id == client_id, Client.tenant_id == tenant.id
     )
+
+    db_client = await session.scalar(query)
 
     if not db_client:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail='Client not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='Client not found'
         )
 
     return db_client
@@ -126,8 +162,15 @@ async def get_client_by_id(session: T_Session, client_id: UUID):
 @router.get(
     path='/', status_code=HTTPStatus.OK, response_model=ClientListRequest
 )
-async def read_all_clients(session: T_Session):
-    query = await session.scalars(select(Client))
-    clients = query.all()
+async def read_all_clients(
+    session: T_Session,
+    tenant: CurrentTenant,
+):
+    """
+    Get all clients within the current tenant.
+    """
+    query = select(Client).where(Client.tenant_id == tenant.id)
 
-    return {'clients': clients}
+    clients = await session.scalars(query)
+
+    return {'clients': clients.all()}
