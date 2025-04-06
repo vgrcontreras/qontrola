@@ -59,8 +59,6 @@ class User:
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), init=False, primary_key=True, default=uuid.uuid4
     )
-    first_name: Mapped[str] = mapped_column(nullable=False)
-    last_name: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
     password: Mapped[str] = mapped_column(nullable=False)
     # Tenant relationship
@@ -68,6 +66,7 @@ class User:
         UUID(as_uuid=True), ForeignKey('tenants.id'), nullable=False
     )
     tenant: Mapped['Tenant'] = relationship(back_populates='users')
+    full_name: Mapped[str] = mapped_column(default=None, nullable=True)
     is_superuser: Mapped[bool] = mapped_column(default=False, nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(

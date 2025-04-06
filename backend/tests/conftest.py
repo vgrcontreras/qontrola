@@ -104,8 +104,7 @@ async def user(session, tenant):
     # Note: we need to pass both tenant and tenant_id due to SQLAlchemy's
     # mapper configuration
     user = User(
-        first_name='test',
-        last_name='test',
+        full_name='test',
         email='test@test.com',
         password=get_password_hash(password),
         is_superuser=False,
@@ -129,8 +128,7 @@ async def superuser(session, tenant):
     # Note: we need to pass both tenant and tenant_id due to SQLAlchemy's
     # mapper configuration
     super_user = User(
-        first_name='admin',
-        last_name='admin',
+        full_name='admin',
         email='admin@admin.com',
         password=get_password_hash(password),
         is_superuser=True,

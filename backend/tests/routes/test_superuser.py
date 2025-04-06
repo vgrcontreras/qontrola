@@ -8,8 +8,7 @@ def test_create_user(api_client, superuser_token, tenant):
     response = api_client.post(
         '/superuser/',
         json={
-            'first_name': 'test',
-            'last_name': 'test',
+            'full_name': 'test',
             'email': 'test@test.com',
             'password': 'test_password',
             'is_superuser': False,
@@ -20,8 +19,7 @@ def test_create_user(api_client, superuser_token, tenant):
 
     assert response.status_code == HTTPStatus.CREATED
     data = response.json()
-    assert data['first_name'] == 'test'
-    assert data['last_name'] == 'test'
+    assert data['full_name'] == 'test'
     assert data['email'] == 'test@test.com'
     assert data['is_superuser'] is False
     assert data['is_active'] is True
@@ -32,8 +30,7 @@ def test_create_user_already_exists(api_client, superuser_token, tenant):
     response = api_client.post(
         '/superuser/',
         json={
-            'first_name': 'test',
-            'last_name': 'test',
+            'full_name': 'test',
             'email': 'admin@admin.com',
             'password': 'test_password',
             'is_superuser': False,
@@ -86,7 +83,7 @@ def test_read_users_with_user(api_client, user, user_token):
 def test_update_user_not_found(api_client, superuser_token):
     response = api_client.patch(
         '/superuser/123e4567-e89b-12d3-a456-426614174000',
-        json={'first_name': 'new_name'},
+        json={'full_name': 'new_name'},
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
@@ -101,8 +98,7 @@ def test_update_user_integrity_error(
     api_client.post(
         '/superuser/',
         json={
-            'first_name': 'name_test',
-            'last_name': 'surname_test',
+            'full_name': 'name_test',
             'email': 'test@email.com',
             'password': 'test_password',
             'tenant_id': str(tenant.id),
@@ -124,15 +120,14 @@ def test_update_user_integrity_error(
 def test_update_user(api_client, user, superuser_token):
     response = api_client.patch(
         f'/superuser/{user.id}',
-        json={'first_name': 'new_name'},
+        json={'full_name': 'new_name'},
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
     assert response.status_code == HTTPStatus.OK
     data = response.json()
     assert UUID(data['id']) == user.id
-    assert data['first_name'] == 'new_name'
-    assert data['last_name'] == 'test'
+    assert data['full_name'] == 'new_name'
     assert data['email'] == 'test@test.com'
     assert data['is_superuser'] is False
     assert data['is_active'] is True
@@ -141,7 +136,7 @@ def test_update_user(api_client, user, superuser_token):
 def test_update_user_not_superuser(api_client, user, user_token):
     response = api_client.patch(
         f'/superuser/{user.id}',
-        json={'first_name': 'new_name'},
+        json={'full_name': 'new_name'},
         headers={'Authorization': f'Bearer {user_token}'},
     )
 
@@ -161,8 +156,7 @@ def test_update_user_password(api_client, user, superuser_token):
     assert response.status_code == HTTPStatus.OK
     data = response.json()
     assert UUID(data['id']) == user.id
-    assert data['first_name'] == 'test'
-    assert data['last_name'] == 'test'
+    assert data['full_name'] == 'test'
     assert data['email'] == 'test@test.com'
     assert data['is_superuser'] is False
     assert data['is_active'] is True

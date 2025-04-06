@@ -4,8 +4,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class UserSchema(BaseModel):
-    first_name: str
-    last_name: str
+    full_name: str | None = None
     email: EmailStr
     password: str
     is_superuser: bool = False
@@ -14,8 +13,7 @@ class UserSchema(BaseModel):
 
 class UserPublic(BaseModel):
     id: UUID
-    first_name: str
-    last_name: str
+    full_name: str | None = None
     email: EmailStr
     is_superuser: bool
     is_active: bool
@@ -28,8 +26,7 @@ class UserList(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    first_name: str | None = None
-    last_name: str | None = None
+    full_name: str | None = None
     email: EmailStr | None = None
     tenant_id: UUID | None = None
 

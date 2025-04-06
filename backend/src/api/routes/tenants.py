@@ -54,8 +54,6 @@ async def register_tenant(
         hashed_password = get_password_hash(admin_data.password)
 
         admin_user = User(
-            first_name=admin_data.first_name,
-            last_name=admin_data.last_name,
             email=admin_data.email,
             password=hashed_password,
             is_superuser=True,
