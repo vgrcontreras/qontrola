@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import (
     CurrentTenant,
+    CurrentUser,
     T_Session,
     get_current_active_superuser,
 )
@@ -33,6 +34,7 @@ async def create_client(
     session: T_Session,
     client_schema: ClientRequestCreate,
     tenant: CurrentTenant,
+    current_user: CurrentUser,
 ):
     """Create a new client within the current tenant."""
     # Check if client with same identifier exists in this tenant
@@ -103,6 +105,7 @@ async def update_client(
     client_id: UUID,
     client: ClientRequestUpdate,
     tenant: CurrentTenant,
+    current_user: CurrentUser,
 ):
     """Update a client within the current tenant."""
     db_client = await session.scalar(
@@ -141,6 +144,7 @@ async def get_client_by_id(
     session: T_Session,
     client_id: UUID,
     tenant: CurrentTenant,
+    current_user: CurrentUser,
 ):
     """
     Get a specific client from the current tenant.
@@ -165,6 +169,7 @@ async def get_client_by_id(
 async def read_all_clients(
     session: T_Session,
     tenant: CurrentTenant,
+    current_user: CurrentUser,
 ):
     """
     Get all clients within the current tenant.

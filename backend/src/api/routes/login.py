@@ -19,6 +19,8 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     x_tenant_domain: str | None = Header(None),
 ):
+    # This endpoint needs to remain public for login
+
     # Validate tenant
     if not x_tenant_domain:
         raise HTTPException(

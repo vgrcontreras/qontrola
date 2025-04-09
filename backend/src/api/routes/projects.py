@@ -72,6 +72,7 @@ async def read_project_by_id(
     session: T_Session,
     project_id: UUID,
     tenant: CurrentTenant,
+    current_user: CurrentUser,
 ) -> Project:
     """
     Get a specific project from the current tenant.
@@ -98,6 +99,7 @@ async def read_project_by_id(
 async def read_all_projects(
     session: T_Session,
     tenant: CurrentTenant,
+    current_user: CurrentUser,
 ) -> list[Project]:
     """
     Get all projects within the current tenant.

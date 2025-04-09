@@ -116,9 +116,14 @@ def test_update_client_integrity_error(
     assert response.json() == {'detail': 'Client already exists'}
 
 
-def test_get_all_clients(session, api_client, db_client) -> None:
+def test_get_all_clients(
+    session, api_client, db_client, superuser_token
+) -> None:
     client_schema = ClientResponse.model_validate(db_client).model_dump()
-    response = api_client.get(url='/clients')
+    response = api_client.get(
+        url='/clients',
+        headers={'Authorization': f'Bearer {superuser_token}'},
+    )
 
     assert response.status_code == HTTPStatus.OK
     # Get the clients list and verify it contains our client data
@@ -140,8 +145,13 @@ def test_get_all_clients(session, api_client, db_client) -> None:
     assert tenant_id1 == tenant_id2
 
 
-def test_get_client_by_id(session, db_client, api_client) -> None:
-    response = api_client.get(url=f'/clients/{db_client.id}')
+def test_get_client_by_id(
+    session, db_client, api_client, superuser_token
+) -> None:
+    response = api_client.get(
+        url=f'/clients/{db_client.id}',
+        headers={'Authorization': f'Bearer {superuser_token}'},
+    )
 
     assert response.status_code == HTTPStatus.OK
     data = response.json()
@@ -152,9 +162,12 @@ def test_get_client_by_id(session, db_client, api_client) -> None:
     assert data['identifier'] == db_client.identifier
 
 
-def test_get_client_by_id_not_found(session, api_client) -> None:
+def test_get_client_by_id_not_found(
+    session, api_client, superuser_token
+) -> None:
     response = api_client.get(
-        url='/clients/123e4567-e89b-12d3-a456-426614174000'
+        url='/clients/123e4567-e89b-12d3-a456-426614174000',
+        headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
