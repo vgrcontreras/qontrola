@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .gradient-btn {
+    @apply bg-gradient-to-r from-royal-blue to-ice-cold hover:from-royal-blue-dark hover:to-ice-cold-dark text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-royal-blue focus:ring-opacity-50;
+  }
+  
+  .form-input {
+    @apply w-full p-3 bg-white border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-royal-blue/50 transition-all duration-300;
+  }
+  
+  .form-label {
+    @apply block text-neutral-darker font-medium mb-2;
+  }
+  
+  .error-message {
+    @apply text-error text-sm mt-1 flex items-center gap-1;
+  }
+  
+  .animate-fade-in-up {
+    @apply opacity-0;
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+  
+  .animate-delay-1 {
+    animation-delay: 0.1s;
+  }
+  
+  .animate-delay-2 {
+    animation-delay: 0.2s;
+  }
+  
+  .animate-delay-3 {
+    animation-delay: 0.3s;
+  }
+  
+  .animate-delay-4 {
+    animation-delay: 0.4s;
+  }
+} 
