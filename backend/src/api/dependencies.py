@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import Depends, Header
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jwt import DecodeError, decode
+from jwt import DecodeError, ExpiredSignatureError, decode
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -81,6 +81,9 @@ async def get_current_user(
             )
 
     except DecodeError:
+        raise credentials_exception
+
+    except ExpiredSignatureError:
         raise credentials_exception
 
     user_db = await session.scalar(

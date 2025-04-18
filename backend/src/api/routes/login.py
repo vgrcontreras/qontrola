@@ -5,7 +5,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 
-from src.api.dependencies import T_Session
+from src.api.dependencies import CurrentTenant, CurrentUser, T_Session
 from src.models import Tenant, User
 from src.schemas.token import Token
 from src.security import create_access_token, verify_password
@@ -71,3 +71,16 @@ async def login_for_access_token(
     )
 
     return {'access_token': access_token, 'token_type': 'bearer'}
+
+
+@router.post('/refresh_token', response_model=Token)
+async def refresh_access_token(user: CurrentUser, tenant: CurrentTenant):
+    new_access_token = create_access_token(
+        data={
+            'sub': user.email,
+            'tenant_id': str(tenant.id),
+            'is_superuser': user.is_superuser,
+        }
+    )
+
+    return {'access_token': new_access_token, 'token_type': 'bearer'}
