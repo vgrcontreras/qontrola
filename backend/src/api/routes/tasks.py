@@ -74,9 +74,7 @@ async def read_task_by_id(
     """
     Get a specific task from the current tenant.
     """
-    query = select(Task).where(
-        Task.id == task_id, Task.tenant_id == tenant.id
-    )
+    query = select(Task).where(Task.id == task_id, Task.tenant_id == tenant.id)
 
     task_db = await session.scalar(query)
 
@@ -128,9 +126,7 @@ async def delete_task(
     Delete (deactivate) a task from the current tenant.
     """
     task_db = await session.scalar(
-        select(Task).where(
-            Task.id == task_id, Task.tenant_id == tenant.id
-        )
+        select(Task).where(Task.id == task_id, Task.tenant_id == tenant.id)
     )
 
     if not task_db:
@@ -161,9 +157,7 @@ async def update_task(
 ) -> Task:
     """Update a task within the current tenant."""
     task_db = await session.scalar(
-        select(Task).where(
-            Task.id == task_id, Task.tenant_id == tenant.id
-        )
+        select(Task).where(Task.id == task_id, Task.tenant_id == tenant.id)
     )
 
     if not task_db:

@@ -128,8 +128,7 @@ class Project:
     project_value: Mapped[float] = mapped_column(nullable=True, default=None)
     target_date: Mapped[date] = mapped_column(nullable=True, default=None)
     tenant: Mapped['Tenant'] = relationship(
-        back_populates='projects', 
-        init=False
+        back_populates='projects', init=False
     )
     tasks: Mapped[List['Task']] = relationship(
         back_populates='project',
