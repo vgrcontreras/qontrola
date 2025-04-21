@@ -33,7 +33,7 @@ Gerenciar projetos é desafiador. Mas gerenciar as **finanças de cada projeto c
 
 Consultorias, agências, escritórios de engenharia, software houses e tantas outras enfrentam diariamente o mesmo problema:
 
-> “Sabemos *o que* está sendo entregue, mas nem sempre sabemos *quanto* está realmente custando.”
+> "Sabemos *o que* está sendo entregue, mas nem sempre sabemos *quanto* está realmente custando."
 
 A maioria dos ERPs do mercado trata os projetos como um item qualquer na contabilidade. Eles **não foram feitos para empresas que vivem de projetos**. E é aí que a **qontrola** entra em cena.
 
@@ -85,7 +85,7 @@ e foi construída para te dar **autonomia, clareza e crescimento com base em dad
 - Integração com autenticação via Supabase Auth.
 
 ### 👥 Gestão de Funcionários
-Empresas podem cadastrar usuários internos para acesso à plataforma, com diferentes níveis de permissão:
+Empresas podem cadastrar usuários internos para acessar a plataforma, com diferentes níveis de permissão:
 
 - **Administrador:** acesso completo ao sistema, gerenciamento de usuários, visualização de relatórios financeiros e controle de configurações da empresa.
 - **Usuário Padrão:** acesso restrito com base em suas permissões e departamento.
@@ -172,3 +172,54 @@ Execute a aplicação
 ```
 uvicorn app.main:app --reload
 ```
+
+# Studio Caju
+
+## Docker Setup for Local Development
+
+### Prerequisites
+- Docker and Docker Compose installed on your machine
+
+### Getting Started
+1. Clone this repository
+2. Run the containers:
+   ```bash
+   docker compose up
+   ```
+3. Access the applications:
+   - Backend API: http://localhost:8000
+   - Frontend: http://localhost:3000
+   - pgAdmin: http://localhost:5050 (Email: admin@studiocaju.com, Password: pgadmin)
+
+### Services
+- **PostgreSQL**: Database running on port 5432
+- **pgAdmin**: PostgreSQL administration tool running on port 5050
+- **Backend**: FastAPI application running on port 8000
+- **Frontend**: React application running on port 3000
+
+### Connecting to PostgreSQL via pgAdmin
+1. Access pgAdmin at http://localhost:5050
+2. Login with email: admin@studiocaju.com and password: pgadmin
+3. Add a new server:
+   - Name: studio-caju-local
+   - Host: postgres
+   - Port: 5432
+   - Username: postgres
+   - Password: postgres
+   - Database: studiocaju
+
+### Configuration
+- Default environment variables are set in the docker-compose.yml file
+- You can modify these settings by creating a .env file based on .env.example
+
+### Stopping Services
+```bash
+docker compose down
+```
+
+To remove volumes as well:
+```bash
+docker compose down -v
+```
+
+For more detailed documentation on the Docker setup, including troubleshooting, see [Docker Setup Documentation](docs/docker-setup.md).
