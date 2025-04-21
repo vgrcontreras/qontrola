@@ -19,12 +19,13 @@ class ClientRequestCreate(BaseModel):
     def validate_identifier_length(cls, value, info):
         type_identifier = info.data.get('type_identifier')
 
-        if (type_identifier == IdentifierType.cpf and
-                len(value) != CPF_LENGTH):
+        if type_identifier == IdentifierType.cpf and len(value) != CPF_LENGTH:
             raise ValueError('CPF must have exactly 11 digits')
 
-        if (type_identifier == IdentifierType.cnpj and
-                len(value) != CNPJ_LENGTH):
+        if (
+            type_identifier == IdentifierType.cnpj
+            and len(value) != CNPJ_LENGTH
+        ):
             raise ValueError('CNPJ must have exactly 14 digits')
 
         return value
@@ -59,12 +60,13 @@ class ClientRequestUpdate(BaseModel):
         if type_identifier is None:
             return value
 
-        if (type_identifier == IdentifierType.cpf and
-                len(value) != CPF_LENGTH):
+        if type_identifier == IdentifierType.cpf and len(value) != CPF_LENGTH:
             raise ValueError('CPF must have exactly 11 digits')
 
-        if (type_identifier == IdentifierType.cnpj and
-                len(value) != CNPJ_LENGTH):
+        if (
+            type_identifier == IdentifierType.cnpj
+            and len(value) != CNPJ_LENGTH
+        ):
             raise ValueError('CNPJ must have exactly 14 digits')
 
         return value
