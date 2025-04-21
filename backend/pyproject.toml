@@ -60,6 +60,8 @@ run = 'fastapi dev src/api/main.py'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=src -vv'
 post_test = 'coverage html'
+docs-serve = "mkdocs serve -f mkdocs.yml"
+docs-build = "mkdocs build -f mkdocs.yml"
 
 [build-system]
 requires = ["poetry-core"]
