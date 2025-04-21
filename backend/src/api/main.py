@@ -1,7 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.routes import clients, login, projects, superuser, tenants, users
+from src.api.routes import (
+                            clients,
+                            login,
+                            projects,
+                            superuser,
+                            tasks,
+                            tenants,
+                            users,
+)
 
 app = FastAPI()
 
@@ -19,4 +27,5 @@ app.include_router(users.router, prefix='/users', tags=['users'])
 app.include_router(login.router, prefix='/token', tags=['token'])
 app.include_router(clients.router, prefix='/clients', tags=['clients'])
 app.include_router(projects.router, prefix='/projects', tags=['projects'])
+app.include_router(tasks.router, prefix='/tasks', tags=['tasks'])
 app.include_router(superuser.router, prefix='/superuser', tags=['superuser'])

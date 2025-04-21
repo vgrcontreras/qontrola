@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 import pytest_asyncio
@@ -10,7 +10,7 @@ from sqlalchemy.pool import StaticPool
 
 from src.api.dependencies import get_session, get_tenant_from_domain
 from src.api.main import app
-from src.models import Client, Tenant, User, table_registry
+from src.models import Client, Project, Tenant, User, table_registry
 from src.security import get_password_hash
 
 
@@ -153,7 +153,7 @@ async def db_client(session, tenant):
         name='test',
         client_type='test',
         type_identifier='cnpj',
-        identifier='test',
+        identifier='12345678901234',
         tenant_id=tenant.id,
         tenant=tenant,
     )
@@ -163,6 +163,23 @@ async def db_client(session, tenant):
     await session.refresh(client_db)
 
     return client_db
+
+
+@pytest_asyncio.fixture
+async def db_project(session, superuser, tenant):
+    project = Project(
+        name='test_project',
+        status_state='active',
+        project_value=1000.0,
+        target_date=date(2024, 12, 31),
+        created_by=superuser.id,
+        is_active=True,
+        tenant_id=tenant.id,
+    )
+    session.add(project)
+    await session.commit()
+    await session.refresh(project)
+    return project
 
 
 @pytest_asyncio.fixture

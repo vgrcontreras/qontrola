@@ -33,6 +33,7 @@ This approach provides several benefits:
   - Superusers can manage all users within their tenant
   - Regular users can only manage their own information
 - **Tenant Isolation**: All database queries include tenant filtering for data isolation
+- **Brazilian Identifier Validation**: Automatic validation of CPF (11 digits) and CNPJ (14 digits) identifiers
 
 ## API Usage
 
@@ -77,6 +78,24 @@ Form data:
 - username: admin@example.com
 - password: secure_password
 
+### Client Management
+
+Clients can be created with CPF or CNPJ identifiers:
+
+```
+POST /clients
+```
+
+Request body:
+```json
+{
+  "name": "Client Name",
+  "client_type": "type",
+  "type_identifier": "cpf", // or "cnpj"
+  "identifier": "12345678901" // 11 digits for CPF, 14 digits for CNPJ
+}
+```
+
 ### User Management
 
 All user management endpoints follow these permission rules:
@@ -98,4 +117,10 @@ After making model changes, generate a migration:
 ```bash
 python create_migration.py
 poetry run alembic upgrade head
-``` 
+```
+
+## Documentation
+
+For more detailed documentation on specific features, see:
+
+- [Brazilian Identifier Validation](docs/client_identifier_validation.md) 

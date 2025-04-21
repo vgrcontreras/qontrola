@@ -11,7 +11,7 @@ def test_create_client(api_client, superuser_token) -> None:
             'name': 'client1',
             'client_type': 'velas',
             'type_identifier': 'cnpj',
-            'identifier': 'test',
+            'identifier': '12345678901234',
         },
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
@@ -21,7 +21,7 @@ def test_create_client(api_client, superuser_token) -> None:
     assert data['name'] == 'client1'
     assert data['client_type'] == 'velas'
     assert data['type_identifier'] == 'cnpj'
-    assert data['identifier'] == 'test'
+    assert data['identifier'] == '12345678901234'
     # Verify UUID format
     assert UUID(data['id']) is not None
 
@@ -35,7 +35,7 @@ def test_create_client_already_exists(
             'name': 'client1',
             'client_type': 'velas',
             'type_identifier': 'cnpj',
-            'identifier': 'test',
+            'identifier': '12345678901234',
         },
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
@@ -87,7 +87,7 @@ def test_update_client(api_client, db_client, superuser_token) -> None:
     assert data['name'] == 'test_updated_name'
     assert data['client_type'] == 'test'
     assert data['type_identifier'] == 'cnpj'
-    assert data['identifier'] == 'test'
+    assert data['identifier'] == '12345678901234'
     assert UUID(data['id']) == db_client.id
 
 
@@ -101,14 +101,14 @@ def test_update_client_integrity_error(
             'name': 'client1',
             'client_type': 'velas',
             'type_identifier': 'cnpj',
-            'identifier': 'test2',
+            'identifier': '12345678901235',
         },
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
     response = api_client.patch(
         url=f'/clients/{db_client.id}',
-        json={'identifier': 'test2'},
+        json={'identifier': '12345678901235'},
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
 
