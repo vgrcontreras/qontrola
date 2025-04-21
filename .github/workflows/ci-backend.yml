@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SECRET_KEY: ${{ secrets.SECRETY_KEY }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }} 
       ALGORITHM: ${{ secrets.ALGORITHM }}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
       FIRST_SUPERUSER_EMAIL: ${{ secrets.FIRST_SUPERUSER_EMAIL }}
