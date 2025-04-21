@@ -50,10 +50,11 @@ async def create_project(
 
     project_data = project.model_dump()
 
+    # Set the fields from the request
     project_data['created_by'] = current_user.id
     project_data['tenant_id'] = tenant.id
-    project_data['tenant'] = tenant
 
+    # Create the project with the provided data
     project_db = Project(**project_data)
 
     session.add(project_db)

@@ -50,6 +50,12 @@ class Tenant:
         init=False,
         default_factory=list,
     )
+    tasks: Mapped[List['Task']] = relationship(
+        back_populates='tenant',
+        cascade='all, delete-orphan',
+        init=False,
+        default_factory=list,
+    )
 
 
 @table_registry.mapped_as_dataclass
@@ -107,22 +113,73 @@ class Client:
 class Project:
     __tablename__ = 'projects'
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), init=False, primary_key=True, default=uuid.uuid4
-    )
+    # Fields without default values must come first
     name: Mapped[str] = mapped_column(unique=True)
-    status_state: Mapped[str] = mapped_column(nullable=True)
-    project_value: Mapped[float] = mapped_column(nullable=True)
-    target_date: Mapped[date] = mapped_column(nullable=True)
-    # Tenant relationship
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey('tenants.id'), nullable=False
     )
-    tenant: Mapped['Tenant'] = relationship(back_populates='projects')
+    created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+
+    # Fields with defaults or init=False can come after
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), init=False, primary_key=True, default=uuid.uuid4
+    )
+    status_state: Mapped[str] = mapped_column(nullable=True, default=None)
+    project_value: Mapped[float] = mapped_column(nullable=True, default=None)
+    target_date: Mapped[date] = mapped_column(nullable=True, default=None)
+    tenant: Mapped['Tenant'] = relationship(
+        back_populates='projects', 
+        init=False
+    )
+    tasks: Mapped[List['Task']] = relationship(
+        back_populates='project',
+        cascade='all, delete-orphan',
+        init=False,
+        default_factory=list,
+    )
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False, onupdate=func.now(), nullable=True
+    )
+    updated_by: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), default=None, nullable=True
+    )
+    is_active: Mapped[bool] = mapped_column(default=True)
+
+
+@table_registry.mapped_as_dataclass
+class Task:
+    __tablename__ = 'tasks'
+
+    # Required fields without defaults
+    title: Mapped[str] = mapped_column(nullable=False)
+    # Foreign keys
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('projects.id'), nullable=False
+    )
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('tenants.id'), nullable=False
+    )
     created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True))
+
+    # Fields with defaults or init=False
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), init=False, primary_key=True, default=uuid.uuid4
+    )
+    description: Mapped[str] = mapped_column(nullable=True, default=None)
+    status: Mapped[str] = mapped_column(nullable=False, default='to_do')
+    priority: Mapped[str] = mapped_column(nullable=False, default='medium')
+    due_date: Mapped[date] = mapped_column(nullable=True, default=None)
+    # Relationships
+    project: Mapped['Project'] = relationship(
+        back_populates='tasks', init=False
+    )
+    tenant: Mapped['Tenant'] = relationship(back_populates='tasks', init=False)
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
         init=False, onupdate=func.now(), nullable=True
     )

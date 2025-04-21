@@ -14,9 +14,9 @@ class ProjectRequestCreate(BaseModel):
 class ProjectResponse(BaseModel):
     id: UUID
     name: str
-    status_state: str
-    project_value: float
-    target_date: date
+    status_state: str | None
+    project_value: float | None
+    target_date: date | None
     created_at: datetime
     created_by: UUID
     tenant_id: UUID

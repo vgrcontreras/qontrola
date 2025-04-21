@@ -17,7 +17,6 @@ async def db_project(session, superuser, tenant) -> Project:
         created_by=superuser.id,
         is_active=True,
         tenant_id=tenant.id,
-        tenant=tenant,
     )
     session.add(project)
     await session.commit()
