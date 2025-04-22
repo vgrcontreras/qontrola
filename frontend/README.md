@@ -1,83 +1,73 @@
-# Qontrolla Sign Up Page
+# Welcome to your Lovable project
 
-A modern, responsive sign-up page for Qontrolla, designed for creative professionals who want more control over their projects and finances.
+## Project info
 
-## Features
+**URL**: https://lovable.dev/projects/fc55b3ab-5221-4202-8a19-38b4b068b166
 
-- Clean, modern design following Qontrolla's style guide
-- Responsive layout that adapts to different screen sizes
-- Smooth animations and transitions
-- Form validation with inline error messages
-- Password visibility toggle
-- Connection to the backend API for tenant registration
+## How can I edit this code?
 
-## Technology Stack
+There are several ways of editing your application.
 
-- React with TypeScript
-- Tailwind CSS for styling
-- DaisyUI component library
-- Framer Motion for animations
-- React Hook Form for form validation
-- Lucide React for icons
+**Use Lovable**
 
-## Getting Started
+Simply visit the [Lovable Project](https://lovable.dev/projects/fc55b3ab-5221-4202-8a19-38b4b068b166) and start prompting.
 
-### Prerequisites
+Changes made via Lovable will be committed automatically to this repo.
 
-- Node.js 14.x or higher
-- npm or yarn
+**Use your preferred IDE**
 
-### Installation
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-1. Clone the repository
-2. Navigate to the frontend directory
-3. Install dependencies:
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-```bash
-npm install
-# or
-yarn install
-```
+Follow these steps:
 
-### Development
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-To start the development server:
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
 
-```bash
+# Step 3: Install the necessary dependencies.
+npm i
+
+# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
-# or
-yarn dev
 ```
 
-The application will be available at http://localhost:3000
+**Edit a file directly in GitHub**
 
-### Building for Production
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-To build the application:
+**Use GitHub Codespaces**
 
-```bash
-npm run build
-# or
-yarn build
-```
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## Project Structure
+## What technologies are used for this project?
 
-- `/src` - Source code
-  - `/components` - Reusable React components
-  - `/pages` - Page components
-  - `/services` - API service functions
-  - `/styles` - CSS styles and Tailwind configuration
+This project is built with:
 
-## Backend Integration
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-The sign-up page connects to the backend API for tenant registration. The configuration uses a Vite proxy to handle API requests and avoid CORS issues during development.
+## How can I deploy this project?
 
-## Design System
+Simply open [Lovable](https://lovable.dev/projects/fc55b3ab-5221-4202-8a19-38b4b068b166) and click on Share -> Publish.
 
-The application follows Qontrolla's design system with:
-- Poppins font for typography
-- Royal Blue light background
-- Gradient buttons using Royal Blue and Ice Cold colors
-- Consistent spacing and rounded corners
-- Smooth animations and transitions 
+## Can I connect a custom domain to my Lovable project?
+
+Yes, you can!
+
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)

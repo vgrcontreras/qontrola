@@ -8,33 +8,33 @@ This to-do list outlines the steps to develop a multi-tenant SaaS application fo
 - [x] Initialize project repository on GitHub.
 - [x] Set up Poetry for backend dependency management.
   - Install Python 3.12, FastAPI, SQLAlchemy (asyncio), Pydantic, Alembic, AsyncPG, PyJWT, pwdlib, Pytest, Ruff, Coverage.py.
-- [ ] Configure Vite for frontend.
+- [x] Configure Vite for frontend.
   - Install React 18, TypeScript, React Router, React Hook Form, Axios, Framer Motion, Lucide React, Tailwind CSS, DaisyUI.
-- [ ] Set up Docker and Docker Compose for local development (PostgreSQL, FastAPI, React).
-- [ ] Configure pre-commit hooks with Ruff for linting/formatting.
+- [x] Set up Docker and Docker Compose for local development (PostgreSQL, FastAPI, React).
+- [x] Configure pre-commit hooks with Ruff for linting/formatting.
 - [x] Set up MkDocs for API documentation.
 - [ ] Configure Taskipy for task automation (e.g., `task test`, `task migrate`).
 
 ### 1.2 Database Setup
-- [ ] Install and configure PostgreSQL locally via Docker.
+- [x] Install and configure PostgreSQL locally via Docker.
 - [ ] Create initial database schema using Alembic.
-  - Tables: `tenants`, `users`, `refresh_tokens`, `clients`, `categories`, `projects`, `tasks`, `income`, `expenses`.
+  - Tables: `tenants`, `users`, `clients`, `categories`, `projects`, `tasks`, `income`, `expenses`.
   - Add `tenant_id` to all tenant-specific tables for shared-database tenancy.
   - Add unique constraint on `categories (tenant_id, name)`.
 - [ ] Write SQLAlchemy models for all tables.
-- [ ] Test database connectivity with AsyncPG.
+- [x] Test database connectivity with AsyncPG.
 
 ### 1.3 Authentication Setup
-- [ ] Implement password hashing with `pwdlib` (Argon2).
+- [x] Implement password hashing with `pwdlib` (Argon2).
   - Create utility functions for hashing and verifying passwords.
-- [ ] Set up JWT authentication with `PyJWT`.
+- [x] Set up JWT authentication with `PyJWT`.
   - Create functions for generating access tokens (15-min expiry) and refresh tokens (7-day expiry).
-- [ ] Implement FastAPI endpoints:
+- [x] Implement FastAPI endpoints:
   - `/signup`: Create tenant and admin user, hash password, return access/refresh tokens.
   - `/login`: Verify credentials, return access/refresh tokens, store refresh token in `refresh_tokens`.
   - `/refresh`: Validate refresh token, issue new access token.
-- [ ] Create FastAPI middleware to validate `tenant_id` from JWT on all protected routes.
-- [ ] Test authentication endpoints with Pytest.
+- [x] Create FastAPI middleware to validate `tenant_id` from JWT on all protected routes.
+- [x] Test authentication endpoints with Pytest.
 
 ### 1.4 CI/CD Setup
 - [ ] Configure GitHub Actions for CI/CD.
@@ -45,10 +45,10 @@ This to-do list outlines the steps to develop a multi-tenant SaaS application fo
 ## Phase 2: Core Features
 
 ### 2.1 Tenant and User Management
-- [ ] Implement FastAPI endpoints for tenant management:
+- [x] Implement FastAPI endpoints for tenant management:
   - Update tenant profile (name, logo, address).
   - Get tenant details.
-- [ ] Implement user management endpoints (Admin only):
+- [x] Implement user management endpoints (Admin only):
   - Invite team member (create user with Member role).
   - Update/delete user.
 - [ ] Create React components for:
@@ -60,13 +60,13 @@ This to-do list outlines the steps to develop a multi-tenant SaaS application fo
 - [ ] Test endpoints and UI with Pytest and manual testing.
 
 ### 2.2 Client Management
-- [ ] Implement FastAPI endpoints:
+- [x] Implement FastAPI endpoints:
   - CRUD operations for clients (create, read, update, delete).
   - Filter by `tenant_id`.
 - [ ] Create React components:
   - Client list with search/filter (DaisyUI table).
   - Client CRUD forms (React Hook Form).
-- [ ] Test endpoints and UI.
+- [x] Test endpoints and UI.
 
 ### 2.3 Project and Task Management
 - [ ] Implement FastAPI endpoints:
@@ -142,7 +142,6 @@ This to-do list outlines the steps to develop a multi-tenant SaaS application fo
   - Configure PostgreSQL for encryption at rest.
   - Use TLS for API requests.
 - [ ] Test security with Pytest and manual penetration testing.
-- **Estimated Duration**: 1.5 weeks
 
 ### 4.2 Testing
 - [ ] Write Pytest tests for all endpoints:
@@ -153,7 +152,6 @@ This to-do list outlines the steps to develop a multi-tenant SaaS application fo
 - [ ] Achieve 80%+ test coverage (Coverage.py).
 - [ ] Perform manual UI testing on multiple devices.
 - [ ] Test performance of reporting endpoints with large datasets.
-- **Estimated Duration**: 1.5 weeks
 
 ### 4.3 Deployment
 - [ ] Deploy to cloud provider (e.g., Railway, Fly.io, AWS ECS).
@@ -162,7 +160,6 @@ This to-do list outlines the steps to develop a multi-tenant SaaS application fo
 - [ ] Configure monitoring (e.g., Sentry for errors, CloudWatch for logs).
 - [ ] Set up daily backups with point-in-time recovery.
 - [ ] Test deployment and rollback procedures.
-- **Estimated Duration**: 1 week
 
 ## Phase 5: Feedback and Iteration (Ongoing)
 
@@ -170,29 +167,9 @@ This to-do list outlines the steps to develop a multi-tenant SaaS application fo
 - [ ] Recruit 5-10 Brazilian freelancers for beta testing.
 - [ ] Collect feedback on usability, features, and performance.
 - [ ] Prioritize bug fixes and feature requests.
-- **Estimated Duration**: 2 weeks
 
 ### 5.2 Iteration
 - [ ] Implement high-priority feedback (e.g., UI tweaks, additional filters).
 - [ ] Update MkDocs documentation with new features.
 - [ ] Monitor adoption metrics (target: 500 tenants in 6 months).
 - [ ] Plan additional features (e.g., email notifications, integrations) based on demand.
-- **Estimated Duration**: Ongoing
-
-## Total Estimated Duration
-- **Core Development (Phases 1-4)**: 17-22 weeks (~4-5.5 months)
-- **Initial Feedback (Phase 5)**: 2 weeks
-- **Total Initial Build**: ~4.5-6 months
-
-## Notes
-- **Team Size**: Assumes 2-3 developers working full-time. Adjust timelines for larger/smaller teams.
-- **Parallel Tasks**: Frontend and backend tasks can be developed concurrently to reduce timeline.
-- **Testing**: Continuous testing during development reduces Phase 4 workload.
-- **Cloud Costs**: Budget for PostgreSQL, S3, and hosting (~$50-100/month initially).
-- **Documentation**: Update MkDocs with each feature for developer handoff.
-
-## Next Immediate Steps
-1. Create GitHub repository and initialize Poetry/Vite projects.
-2. Set up Docker Compose for local PostgreSQL, FastAPI, and React.
-3. Define Alembic migrations for initial schema.
-4. Implement and test `/signup`, `/login`, and `/refresh` endpoints with `pwdlib` and `PyJWT`.
