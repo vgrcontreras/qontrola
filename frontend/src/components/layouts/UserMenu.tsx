@@ -1,14 +1,15 @@
-
 import { ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function UserMenu() {
   const { user, logout } = useAuth();
   const { state } = useSidebar();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const isCollapsed = state === "collapsed";
+  const navigate = useNavigate();
 
   const toggleUserMenu = () => setUserMenuOpen(!userMenuOpen);
 
@@ -17,10 +18,10 @@ export function UserMenu() {
       <div className="relative">
         <button 
           onClick={toggleUserMenu}
-          className="w-full flex items-center p-3 rounded-lg hover:bg-caju-800 transition-colors group"
+          className="w-full flex items-center p-3 rounded-lg hover:bg-caju-800 transition-colors group text-white"
         >
           <div className="h-8 w-8 rounded-full bg-caju-300 flex items-center justify-center text-caju-900 font-bold">
-            {user?.name.charAt(0)}
+            {user?.name?.charAt(0)}
           </div>
           {!isCollapsed && (
             <>
@@ -35,12 +36,18 @@ export function UserMenu() {
 
         {userMenuOpen && !isCollapsed && (
           <div className="absolute bottom-full left-0 right-0 mb-2 bg-caju-800 rounded-lg py-2">
-            <a href="/perfil" className="block px-4 py-2 text-sm hover:bg-caju-700 transition-colors">
+            <button 
+              onClick={() => navigate("/perfil")}
+              className="block w-full text-left px-4 py-2 text-sm hover:bg-caju-700 transition-colors text-white"
+            >
               Meu Perfil
-            </a>
-            <a href="/configuracoes" className="block px-4 py-2 text-sm hover:bg-caju-700 transition-colors">
+            </button>
+            <button 
+              onClick={() => navigate("/configuracoes")}
+              className="block w-full text-left px-4 py-2 text-sm hover:bg-caju-700 transition-colors text-white"
+            >
               Configurações
-            </a>
+            </button>
             <button 
               onClick={() => logout()} 
               className="w-full text-left px-4 py-2 text-sm hover:bg-caju-700 transition-colors text-red-300"
