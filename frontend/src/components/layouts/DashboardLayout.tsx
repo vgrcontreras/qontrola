@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useLocation } from "react-router-dom";
 import { useTenant } from "@/contexts/TenantContext";
@@ -36,11 +35,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="min-h-screen w-full bg-gradient-to-br from-primary-50 to-neutral-100">
         <div className="w-full bg-white min-h-screen lg:rounded-xl lg:shadow-lg lg:m-0 overflow-hidden">
           <div className="flex flex-col lg:flex-row w-full">
-            <Sidebar>
+            <Sidebar className="bg-white">
               <SidebarContent>
-                <div className="p-4 border-b border-caju-800 flex items-center justify-between">
+                <div className="p-4 border-b border-caju-100 flex items-center justify-between bg-caju-600">
                   <h1 className="font-bold text-xl text-white">Studio Caju</h1>
-                  <SidebarTrigger className="text-white md:hidden hover:bg-caju-800" />
+                  <SidebarTrigger className="text-white md:hidden hover:bg-caju-700" />
                 </div>
                 <SidebarNav />
                 <UserMenu />

@@ -37,7 +37,7 @@ export function SidebarNav() {
           className={`flex items-center p-3 rounded-lg w-full text-left ${
             item.path === currentPath 
               ? "bg-caju-800 text-white"
-              : "text-white hover:bg-caju-800"
+              : "text-caju-500 hover:bg-caju-100 hover:text-caju-800"
           } transition-colors`}
         >
           <item.icon className="h-5 w-5" />
