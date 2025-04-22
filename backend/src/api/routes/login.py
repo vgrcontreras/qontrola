@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from src.api.dependencies import CurrentTenant, CurrentUser, T_Session
 from src.models import Tenant, User
-from src.schemas.token import Token
+from src.schemas.token import EmailRequest, TenantDomainResponse, Token
 from src.security import create_access_token, verify_password
 
 router = APIRouter()
@@ -71,6 +71,43 @@ async def login_for_access_token(
     )
 
     return {'access_token': access_token, 'token_type': 'bearer'}
+
+
+@router.post(
+    '/by-email', status_code=HTTPStatus.OK, response_model=TenantDomainResponse
+)
+async def get_tenant_domain_by_email(
+    email_data: EmailRequest,
+    session: T_Session,
+):
+    """Find tenant domain by user email."""
+    user_db = await session.scalar(
+        select(User).where(
+            (User.email == email_data.email) & (User.is_active == True)  # noqa: E712
+        )
+    )
+
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='User not found',
+        )
+
+    # Get the tenant for this user
+    tenant = await session.scalar(
+        select(Tenant).where(
+            (Tenant.id == user_db.tenant_id) & (Tenant.is_active == True)  # noqa: E712
+        )
+    )
+
+    if not tenant:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Tenant not found or inactive',
+        )
+
+    # Return as a JSON object instead of a raw string
+    return {'domain': tenant.domain}
 
 
 @router.post('/refresh_token', response_model=Token)

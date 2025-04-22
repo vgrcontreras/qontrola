@@ -48,15 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     
     try {
-      // Obter o domínio do tenant
-      const tenantDomain = localStorage.getItem('tenantDomain');
-      
-      if (!tenantDomain) {
-        throw new Error('Domínio do tenant não encontrado');
-      }
-      
-      // Fazer login
-      const userData = await AuthAPI.login(tenantDomain, email, password);
+      // Fazer login sem necessidade de informar o domínio
+      const userData = await AuthAPI.login(email, password);
       setUser(userData);
       return true;
     } catch (err: any) {

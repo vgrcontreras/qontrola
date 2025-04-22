@@ -81,8 +81,8 @@ const Signup = () => {
       // Registrar tenant e administrador
       await AuthAPI.registerTenant(registrationData);
 
-      // Fazer login automaticamente
-      await AuthAPI.login(formData.tenantDomain, formData.adminEmail, formData.adminPassword);
+      // Fazer login automaticamente - atualizando para a nova assinatura do método
+      await AuthAPI.login(formData.adminEmail, formData.adminPassword);
 
       toast({
         title: "Cadastro realizado com sucesso!",

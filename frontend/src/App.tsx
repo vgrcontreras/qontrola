@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -45,6 +44,17 @@ const PublicRoute = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
+// New component for routes that should be accessible regardless of auth status
+const AccessibleRoute = ({ children }: { children: JSX.Element }) => {
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+  }
+
+  return children;
+};
+
 const queryClient = new QueryClient();
 
 const AppRoutes = () => {
@@ -53,11 +63,11 @@ const AppRoutes = () => {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route 
         path="/login" 
-        element={<PublicRoute><Login /></PublicRoute>} 
+        element={<AccessibleRoute><Login /></AccessibleRoute>} 
       />
       <Route 
         path="/signup"
-        element={<PublicRoute><Signup /></PublicRoute>}
+        element={<AccessibleRoute><Signup /></AccessibleRoute>}
       />
       <Route 
         path="/dashboard" 

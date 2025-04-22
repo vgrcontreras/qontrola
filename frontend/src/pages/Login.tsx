@@ -6,14 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AuthAPI } from "@/lib/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [domain, setDomain] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { error } = useAuth();
+  const { login, error } = useAuth();
   const [loginError, setLoginError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -23,14 +21,13 @@ const Login = () => {
     setLoginError(null);
     
     try {
-      // Salvar o domínio
-      localStorage.setItem('tenantDomain', domain);
+      // Fazer login com email e senha apenas
+      const success = await login(email, password);
       
-      // Fazer login
-      await AuthAPI.login(domain, email, password);
-      
-      // Redirecionar para o dashboard
-      navigate("/dashboard");
+      if (success) {
+        // Redirecionar para o dashboard
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       setLoginError(err.message || "Erro ao fazer login");
       console.error("Erro ao fazer login:", err);
@@ -58,20 +55,6 @@ const Login = () => {
                   <AlertDescription>{error || loginError}</AlertDescription>
                 </Alert>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="domain">Domínio da Organização</Label>
-                <Input
-                  id="domain"
-                  type="text"
-                  placeholder="studio-caju"
-                  value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
-                  required
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  O identificador único da sua organização.
-                </p>
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">E-mail</Label>
                 <Input
