@@ -1,7 +1,6 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Tenant } from "@/lib/types";
-import { SessionAPI } from "@/lib/storage";
+import { TenantAPI } from "@/lib/api";
 import { useAuth } from "./AuthContext";
 
 interface TenantContextType {
@@ -16,19 +15,30 @@ export const useTenant = () => useContext(TenantContext);
 export function TenantProvider({ children }: { children: ReactNode }) {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // Carregar o tenant atual quando o usuário estiver autenticado
-    if (user) {
-      const currentTenant = SessionAPI.getCurrentTenant();
-      setTenant(currentTenant);
-    } else {
-      setTenant(null);
-    }
+    const loadTenant = async () => {
+      if (isAuthenticated) {
+        try {
+          const tenantDomain = localStorage.getItem('tenantDomain');
+          if (tenantDomain) {
+            const tenantData = await TenantAPI.getCurrent(tenantDomain);
+            setTenant(tenantData);
+          }
+        } catch (err) {
+          console.error('Erro ao carregar tenant:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setTenant(null);
+        setIsLoading(false);
+      }
+    };
     
-    setIsLoading(false);
-  }, [user]);
+    loadTenant();
+  }, [isAuthenticated]);
 
   return (
     <TenantContext.Provider

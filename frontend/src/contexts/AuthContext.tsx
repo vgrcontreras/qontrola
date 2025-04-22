@@ -1,7 +1,6 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/lib/types";
-import { AuthService } from "@/lib/auth";
+import { AuthAPI, UserAPI } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
@@ -22,33 +21,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Verificar se há um usuário autenticado ao carregar a página
-    const currentUser = AuthService.getCurrentUser();
-    setUser(currentUser);
-    setIsLoading(false);
+    const loadUser = async () => {
+      try {
+        // Verificar se há um token salvo
+        const token = localStorage.getItem('token');
+        const tenantDomain = localStorage.getItem('tenantDomain');
+        
+        if (token && tenantDomain) {
+          // Tenta obter os dados do usuário
+          const userData = await UserAPI.getCurrentUser(tenantDomain);
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar usuário:', err);
+        // Limpar o token se ocorrer um erro
+        localStorage.removeItem('token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadUser();
   }, []);
 
   const login = async (email: string, password: string) => {
     setError(null);
     
     try {
-      const result = AuthService.login({ email, password });
+      // Obter o domínio do tenant
+      const tenantDomain = localStorage.getItem('tenantDomain');
       
-      if (result.success && result.user) {
-        setUser(result.user);
-        return true;
-      } else {
-        setError(result.message || "Erro ao fazer login");
-        return false;
+      if (!tenantDomain) {
+        throw new Error('Domínio do tenant não encontrado');
       }
-    } catch (err) {
-      setError("Ocorreu um erro durante o login");
+      
+      // Fazer login
+      const userData = await AuthAPI.login(tenantDomain, email, password);
+      setUser(userData);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Ocorreu um erro durante o login");
       return false;
     }
   };
 
   const logout = () => {
-    AuthService.logout();
+    AuthAPI.logout();
     setUser(null);
   };
 

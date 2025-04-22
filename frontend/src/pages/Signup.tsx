@@ -1,41 +1,102 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AuthAPI } from "@/lib/api";
 
 const Signup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, error } = useAuth(); // Assuming you register automatically on tenant "1"
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // Simples: tenta registrar no tenant "1" (demonstração)
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  // Formulário para cadastro de tenant e admin
+  const [formData, setFormData] = useState({
+    // Tenant
+    tenantName: "",
+    tenantDomain: "",
+    // Admin
+    adminEmail: "",
+    adminPassword: "",
+  });
 
-    // Mock: utiliza register da AuthService se disponível, senão apenas login direto (ajuste conforme sua regra)
-    if (typeof (window as any).AuthService !== "undefined" && typeof (window as any).AuthService.register === "function") {
-      const { register } = (window as any).AuthService;
-      const result = register("1", { name, email, password });
-      if (result.success && result.user) {
-        await login(email, password);
-        navigate("/dashboard");
-      }
-    } else {
-      // fallback: apenas faz login com o cadastro novo
-      await login(email, password);
-      navigate("/dashboard");
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData({
+      ...formData,
+      [id]: value
+    });
+
+    // Se estiver digitando o nome do tenant, sugerir um domínio automaticamente
+    if (id === "tenantName") {
+      const suggestedDomain = value.toLowerCase().replace(/\s+/g, '-');
+      setFormData(prev => ({
+        ...prev,
+        tenantDomain: suggestedDomain
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    if (!formData.tenantName || !formData.tenantDomain) {
+      setError("Nome e domínio da organização são obrigatórios");
+      return false;
     }
 
-    setIsLoading(false);
+    if (!formData.adminEmail || !formData.adminPassword) {
+      setError("Email e senha do administrador são obrigatórios");
+      return false;
+    }
+
+    // Validações adicionais podem ser adicionadas aqui
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Preparar dados para API
+      const registrationData = {
+        name: formData.tenantName,
+        domain: formData.tenantDomain,
+        admin_user: {
+          email: formData.adminEmail,
+          password: formData.adminPassword
+        }
+      };
+
+      // Registrar tenant e administrador
+      await AuthAPI.registerTenant(registrationData);
+
+      // Fazer login automaticamente
+      await AuthAPI.login(formData.tenantDomain, formData.adminEmail, formData.adminPassword);
+
+      toast({
+        title: "Cadastro realizado com sucesso!",
+        description: "Sua organização foi criada e você já está logado."
+      });
+
+      // Redirecionar para dashboard
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Ocorreu um erro ao criar sua conta");
+      console.error("Erro ao criar conta:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -47,8 +108,8 @@ const Signup = () => {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Criar uma conta</CardTitle>
-            <CardDescription>Preencha os campos abaixo para se cadastrar</CardDescription>
+            <CardTitle className="text-xl">Registrar Nova Organização</CardTitle>
+            <CardDescription>Crie sua organização e conta de administrador</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -57,45 +118,65 @@ const Signup = () => {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
+
               <div className="space-y-2">
-                <Label htmlFor="name">Nome</Label>
+                <Label htmlFor="tenantName">Nome da Organização</Label>
                 <Input
-                  id="name"
+                  id="tenantName"
                   type="text"
-                  placeholder="Seu nome"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Studio Caju"
+                  value={formData.tenantName}
+                  onChange={handleChange}
                   required
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="tenantDomain">Domínio</Label>
                 <Input
-                  id="email"
+                  id="tenantDomain"
+                  type="text"
+                  placeholder="studio-caju"
+                  value={formData.tenantDomain}
+                  onChange={handleChange}
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Este será o identificador único da sua organização. 
+                  Apenas letras minúsculas, números e hífens.
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="adminEmail">E-mail do Administrador</Label>
+                <Input
+                  id="adminEmail"
                   type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@exemplo.com"
+                  value={formData.adminEmail}
+                  onChange={handleChange}
                   required
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="adminPassword">Senha</Label>
                 <Input
-                  id="password"
+                  id="adminPassword"
                   type="password"
                   placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.adminPassword}
+                  onChange={handleChange}
                   required
                 />
               </div>
+
               <Button
                 type="submit"
                 className="w-full mt-6 bg-caju-500 hover:bg-caju-600"
                 disabled={isLoading}
               >
-                {isLoading ? "Criando conta..." : "Criar conta"}
+                {isLoading ? "Criando organização..." : "Criar Organização e Conta"}
               </Button>
             </form>
           </CardContent>
