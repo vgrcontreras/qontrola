@@ -86,11 +86,6 @@ def test_expired_token_refresh(api_client, user):
             headers={'Authorization': f'Bearer {access_token}'},
         )
 
-        # The current implementation doesn't check if the token is expired
-        # it just creates a new token based on the user information
-        assert response.status_code == HTTPStatus.OK
-        token_data = response.json()
-        assert 'access_token' in token_data
-        assert 'token_type' in token_data
-        assert token_data['token_type'] == 'bearer'
-        assert token_data['access_token'] is not None
+        # The current implementation correctly rejects expired tokens
+        assert response.status_code == HTTPStatus.UNAUTHORIZED
+        assert response.json() == {'detail': 'Could not validate credentials'}
