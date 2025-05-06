@@ -1,6 +1,6 @@
-# Studio Caju Backend
+# Qontrola Backend
 
-A multi-tenant ERP system built with FastAPI, SQLAlchemy, and PostgreSQL.
+Um sistema ERP multi-tenant construído com FastAPI, SQLAlchemy e PostgreSQL.
 
 ## Multi-Tenant Architecture
 
@@ -121,6 +121,10 @@ poetry run alembic upgrade head
 
 ## Documentation
 
-For more detailed documentation on specific features, see:
+Para documentação detalhada sobre a arquitetura e funcionalidades do backend, consulte:
 
-- [Brazilian Identifier Validation](docs/client_identifier_validation.md) 
+- [Documentação Completa](docs/README.md) - Índice de toda a documentação do backend
+- [Arquitetura do Backend](docs/backend_architecture.md) - Diagramas de arquitetura detalhados
+- [Arquitetura Multi-tenant](docs/multi_tenant_architecture.md) - Detalhes da implementação multi-tenant
+- [Autenticação e Segurança](docs/authentication_security.md) - Sistema de autenticação e práticas de segurança
+- [Referência da API](docs/api_reference.md) - Documentação completa dos endpoints

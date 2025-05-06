@@ -1,52 +1,25 @@
-# Studio Caju API Documentation
+# Documentação do Backend do Qontrola
 
-Welcome to the Studio Caju API documentation. This documentation provides details on how to use the Studio Caju backend API.
+Bem-vindo à documentação do backend do Qontrola. Esta seção contém informações detalhadas sobre a arquitetura, estrutura e funcionalidades do sistema backend.
 
-## Overview
+## Páginas de Documentação
 
-Studio Caju is a comprehensive project management system designed for creative studios and agencies. The API provides endpoints for managing users, clients, projects, tasks, and more.
+- [Arquitetura do Backend](backend_architecture.md) - Documentação detalhada sobre a arquitetura do sistema, incluindo diagramas explicativos
+- [Arquitetura Multi-tenant](multi_tenant_architecture.md) - Explicação detalhada da implementação multi-tenant
+- [Autenticação e Segurança](authentication_security.md) - Detalhes sobre o sistema de autenticação e práticas de segurança
+- [Referência da API](api_reference.md) - Documentação completa dos endpoints da API
+- [Validação de Identificadores Brasileiros](client_identifier_validation.md) - Detalhes sobre a implementação de validação de CPF e CNPJ
 
-## Getting Started
+## Visão Geral
 
-To get started with the API, please refer to the following sections:
+O backend do Qontrola é implementado como uma API REST usando FastAPI, um framework moderno e de alta performance para Python. O sistema utiliza uma arquitetura multi-tenant com banco de dados compartilhado, permitindo que múltiplas organizações utilizem a mesma instância do aplicativo com isolamento completo de dados.
 
-- [API Overview](api_index.md): General information about the API
-- [Authentication](api_login.md): How to authenticate with the API
-- [Users](api_users.md): User management endpoints
-- [Clients](api_clients.md): Client management endpoints
-- [Projects](api_projects.md): Project management endpoints
-- [Tasks](api_tasks.md): Task management endpoints
+### Principais Características:
 
-## API Base URL
+- **Arquitetura Multi-tenant**: Isolamento de dados entre diferentes organizações
+- **Autenticação JWT**: Sistema seguro de autenticação baseado em tokens
+- **Padrão de Exclusão Lógica**: Preservação de dados históricos através de soft delete
+- **Validação Avançada de Dados**: Utilizando Pydantic para garantir integridade dos dados
+- **Controle de Acesso Baseado em Funções**: Diferentes níveis de permissão para usuários
 
-The base URL for all API endpoints is:
-
-```
-http://localhost:8000/api/v1
-```
-
-For production environments, use the appropriate domain.
-
-## Authentication
-
-Most endpoints require authentication. See the [Authentication](api_login.md) section for details on how to obtain and use authentication tokens.
-
-## Response Format
-
-All API responses are returned in JSON format.
-
-## Error Handling
-
-Error responses will include an error message and appropriate HTTP status code.
-
-Example error response:
-
-```json
-{
-  "detail": "Not found"
-}
-```
-
-## Need Help?
-
-If you need assistance with the API, please contact the development team or file an issue on the [GitHub repository](https://github.com/contreras3991/studio-caju). 
+Consulte a documentação de [Arquitetura do Backend](backend_architecture.md) para informações mais detalhadas sobre a estrutura e funcionamento do sistema. 

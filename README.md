@@ -16,6 +16,7 @@ Pensada para quem presta serviços por projeto (como agências, consultorias e f
 - [Como Rodar o Projeto](#▶️-como-rodar-o-projeto)
 - [Docker Setup](#🐳-docker-setup)
 - [Modelagem de Dados](#🧠-modelagem-de-dados)
+- [Documentação Técnica](#📚-documentação-técnica)
 
 ## 💡 Sobre o Projeto
 
@@ -148,3 +149,11 @@ Agora você terá acesso ao banco de dados PostgreSQL através da interface do p
 ---
 
 Para documentação mais detalhada sobre a configuração do Docker, incluindo solução de problemas, consulte [Docker Setup Documentation](docs/docker-setup.md).
+
+## Documentação Técnica
+
+Se você é desenvolvedor ou tem curiosidade sobre como funciona o backend da qontrola, temos uma documentação detalhada disponível:
+
+- [Arquitetura do Backend](backend/docs/README.md) - Explore os diagramas e detalhes técnicos da implementação backend
+
+Esta documentação inclui informações sobre a arquitetura multi-tenant, fluxos de autenticação, modelos de dados e endpoints da API.
