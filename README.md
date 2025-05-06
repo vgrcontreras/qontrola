@@ -61,29 +61,90 @@ A plataforma foi desenhada para te ajudar a responder perguntas como:
 
 ## 🔧 Tecnologias Utilizadas
 
-- **Python** (Pandas, SQLAlchemy, Pydantic, FastAPI)
-- **SQL**
-- **AWS** para serviços na nuvem
-- **dbt** para transformação de dados
-- **Streamlit** para criação de interfaces gráficas
-- **Docker** para ambiente e deploy
-- **Supabase** como backend as a service
-- **Power BI** para visualizações interativas
-- **Selenium** para automações web
-- **Pydantic e Pandera** para qualidade de dados
+### Backend
+- **FastAPI** - Framework web de alta performance para APIs
+- **SQLAlchemy** - ORM para interação com banco de dados
+- **Pydantic** - Validação de dados e configurações
+- **Alembic** - Migrações de banco de dados
+- **Asyncpg** - Driver assíncrono para PostgreSQL
+- **Uvicorn** - Servidor ASGI para Python
+- **PyJWT** - Implementação de JSON Web Tokens
+- **Argon2** - Algoritmo de hash seguro para senhas
 
----
+### Frontend
+- Em desenvolvimento
+
+### Infraestrutura
+- **Docker & Docker Compose** - Containerização e orquestração
+- **PostgreSQL** - Banco de dados relacional
+- **pgAdmin** - Ferramenta de administração para PostgreSQL
+
+### Desenvolvimento e Qualidade
+- **Poetry** - Gerenciamento de dependências Python
+- **Pytest** - Framework de testes
+- **Ruff** - Linter e formatador de código
+- **Pre-commit** - Hooks de Git para garantir qualidade
+- **MkDocs** - Geração de documentação
+- **GitHub Actions** - CI/CD
+
 
 ## ▶️ Como Rodar o Projeto
 
+### Usando Docker Compose
+
+O projeto pode ser executado facilmente usando Docker Compose, que configurará automaticamente o ambiente com todos os serviços necessários.
+
 ```bash
+# Clonar o repositório
 git clone https://github.com/seu-usuario/qontrola.git
-cd qontrola/backend
+cd qontrola
 
+# Iniciar todos os serviços (backend, postgres, pgadmin)
+docker compose up -d
+```
 
-To remove volumes as well:
+Para interromper todos os serviços:
+```bash
+docker compose down
+```
+
+Para reconstruir e reiniciar os serviços (após alterações):
+```bash
+docker compose up -d --build
+```
+
+Para remover volumes também (cuidado: isso apagará dados persistentes):
 ```bash
 docker compose down -v
 ```
 
-For more detailed documentation on the Docker setup, including troubleshooting, see [Docker Setup Documentation](docs/docker-setup.md).
+### Acessando os Serviços
+
+Após iniciar os serviços, você pode acessá-los através das seguintes URLs:
+
+- **Backend API**: http://localhost:8000
+- **pgAdmin**: http://localhost:5050
+
+### Acessando o Banco de Dados via pgAdmin
+
+1. Acesse pgAdmin em http://localhost:5050
+2. Credenciais de acesso ao pgAdmin:
+   - **Email**: admin@qontrola.com
+   - **Senha**: admin
+
+3. Para conectar ao servidor PostgreSQL:
+   - Clique em "Add New Server"
+   - Na aba "General", defina um nome para o servidor (ex: "qontrola")
+   - Na aba "Connection", preencha:
+     - **Host**: postgres
+     - **Port**: 5432
+     - **Maintenance database**: qontrola
+     - **Username**: postgres
+     - **Password**: postgres
+   - Clique em "Save"
+
+Agora você terá acesso ao banco de dados PostgreSQL através da interface do pgAdmin.
+
+---
+
+Para documentação mais detalhada sobre a configuração do Docker, incluindo solução de problemas, consulte [Docker Setup Documentation](docs/docker-setup.md).
