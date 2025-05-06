@@ -97,7 +97,7 @@ O projeto pode ser executado facilmente usando Docker Compose, que configurará 
 
 ```bash
 # Clonar o repositório
-git clone https://github.com/seu-usuario/qontrola.git
+git clone git@github.com:vgrcontreras/qontrola.git
 cd qontrola
 
 # Iniciar todos os serviços (backend, postgres, pgadmin)
