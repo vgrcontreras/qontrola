@@ -9,6 +9,7 @@ The API is organized into the following groups:
 - [Tasks](api_tasks.md) - Manage tasks within projects
 - [Projects](api_projects.md) - Manage projects within the tenant
 - [Clients](api_clients.md) - Manage client organizations
+- [Categories](api_categories.md) - Manage and organize tasks/projects with categories
 - [Login](api_login.md) - Authentication endpoints
 - [Users](api_users.md) - User self-management endpoints
 - [Superuser](api_superuser.md) - User management endpoints (admin-only)

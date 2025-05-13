@@ -2,14 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.routes import (
-    categories,
-    clients,
-    login,
-    projects,
-    superuser,
-    tasks,
-    tenants,
-    users,
+                            categories,
+                            clients,
+                            login,
+                            projects,
+                            superuser,
+                            tasks,
+                            tenants,
+                            users,
 )
 
 app = FastAPI()

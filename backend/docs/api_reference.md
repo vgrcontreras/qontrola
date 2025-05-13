@@ -312,6 +312,63 @@ PUT /tasks/{task_id}
 DELETE /tasks/{task_id}
 ```
 
+### Categorias
+
+#### Listar Categorias
+
+```
+GET /categories
+```
+
+#### Obter Categoria
+
+```
+GET /categories/{category_id}
+```
+
+#### Criar Categoria
+
+```
+POST /categories
+```
+
+**Corpo**:
+```json
+{
+  "name": "Nome da Categoria"
+}
+```
+
+#### Desativar Categoria
+
+```
+DELETE /categories/{category_id}
+```
+
+#### Usar Categoria em Projetos
+
+Ao criar ou atualizar um projeto, você pode especificar uma categoria:
+
+```json
+{
+  "name": "Nome do Projeto",
+  "category_name": "Nome da Categoria"
+}
+```
+
+#### Usar Categoria em Tarefas
+
+Ao criar ou atualizar uma tarefa, você pode especificar uma categoria:
+
+```json
+{
+  "title": "Título da Tarefa",
+  "category_name": "Nome da Categoria"
+}
+```
+
+Se a categoria não existir, ela será criada automaticamente.
+
 ## Formato de Resposta
 
 Todas as respostas da API são retornadas em formato JSON.
