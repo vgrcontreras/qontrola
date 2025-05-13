@@ -20,6 +20,7 @@ from src.schemas.projects import (
     ProjectResponse,
     ProjectResquestUpdate,
 )
+from src.utils.category_utils import get_or_create_category
 
 router = APIRouter()
 
@@ -49,6 +50,15 @@ async def create_project(
         )
 
     project_data = project.model_dump()
+
+    # Handle category_name if provided
+    category_name = project_data.pop('category_name', None)
+    if category_name:
+        category = await get_or_create_category(
+            db=session, category_name=category_name, tenant_id=tenant.id
+        )
+        if category:
+            project_data['category_id'] = category.id
 
     # Set the fields from the request
     project_data['created_by'] = current_user.id
@@ -174,6 +184,15 @@ async def update_project(
             )
 
         project_data = project.model_dump(exclude_unset=True)
+
+        # Handle category_name if provided
+        category_name = project_data.pop('category_name', None)
+        if category_name:
+            category = await get_or_create_category(
+                db=session, category_name=category_name, tenant_id=tenant.id
+            )
+            if category:
+                project_data['category_id'] = category.id
 
         project_data['updated_by'] = current_user.id
 

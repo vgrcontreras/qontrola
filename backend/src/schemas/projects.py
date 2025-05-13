@@ -9,6 +9,7 @@ class ProjectRequestCreate(BaseModel):
     status_state: str | None = None
     project_value: float | None = None
     target_date: date | None = None
+    category_name: str | None = None
 
 
 class ProjectResponse(BaseModel):
@@ -21,6 +22,7 @@ class ProjectResponse(BaseModel):
     created_by: UUID
     tenant_id: UUID
     is_active: bool
+    category_id: UUID | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -41,3 +43,4 @@ class ProjectResquestUpdate(BaseModel):
     status_state: str | None = None
     project_value: float | None = None
     target_date: date | None = None
+    category_name: str | None = None

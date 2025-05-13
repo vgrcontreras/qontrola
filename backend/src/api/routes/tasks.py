@@ -14,6 +14,7 @@ from src.schemas.tasks import (
     TaskRequestUpdate,
     TaskResponse,
 )
+from src.utils.category_utils import get_or_create_category
 
 router = APIRouter()
 
@@ -43,6 +44,15 @@ async def create_task(
         )
 
     task_data = task.model_dump()
+
+    # Handle category_name if provided
+    category_name = task_data.pop('category_name', None)
+    if category_name:
+        category = await get_or_create_category(
+            db=session, category_name=category_name, tenant_id=tenant.id
+        )
+        if category:
+            task_data['category_id'] = category.id
 
     task_data['created_by'] = current_user.id
     task_data['tenant_id'] = tenant.id
@@ -167,6 +177,15 @@ async def update_task(
         )
 
     task_data = task.model_dump(exclude_unset=True)
+
+    # Handle category_name if provided
+    category_name = task_data.pop('category_name', None)
+    if category_name:
+        category = await get_or_create_category(
+            db=session, category_name=category_name, tenant_id=tenant.id
+        )
+        if category:
+            task_data['category_id'] = category.id
 
     # If project_id is provided, verify the project exists
     if task_data.get('project_id'):

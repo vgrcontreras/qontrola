@@ -11,6 +11,7 @@ class TaskRequestCreate(BaseModel):
     priority: str = 'medium'
     due_date: date | None = None
     project_id: UUID
+    category_name: str | None = None
 
 
 class TaskResponse(BaseModel):
@@ -25,6 +26,7 @@ class TaskResponse(BaseModel):
     created_by: UUID
     tenant_id: UUID
     is_active: bool
+    category_id: UUID | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -47,3 +49,4 @@ class TaskRequestUpdate(BaseModel):
     priority: str | None = None
     due_date: date | None = None
     project_id: UUID | None = None
+    category_name: str | None = None
