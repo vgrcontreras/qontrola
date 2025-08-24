@@ -17,7 +17,6 @@ class CategoryResponse(BaseModel):
 
     id: UUID
     name: str
-    tenant_id: UUID
     created_at: datetime
     updated_at: datetime | None = None
     is_active: bool

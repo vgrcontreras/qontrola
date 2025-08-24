@@ -4,7 +4,7 @@ from uuid import UUID
 from src.schemas.users import UserPublic
 
 
-def test_create_user(api_client, superuser_token, tenant):
+def test_create_user(api_client, superuser_token):
     response = api_client.post(
         '/superuser/',
         json={
@@ -12,7 +12,6 @@ def test_create_user(api_client, superuser_token, tenant):
             'email': 'test@test.com',
             'password': 'test_password',
             'is_superuser': False,
-            'tenant_id': str(tenant.id),
         },
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
@@ -26,7 +25,7 @@ def test_create_user(api_client, superuser_token, tenant):
     assert UUID(data['id']) is not None
 
 
-def test_create_user_already_exists(api_client, superuser_token, tenant):
+def test_create_user_already_exists(api_client, superuser_token):
     response = api_client.post(
         '/superuser/',
         json={
@@ -34,7 +33,6 @@ def test_create_user_already_exists(api_client, superuser_token, tenant):
             'email': 'admin@admin.com',
             'password': 'test_password',
             'is_superuser': False,
-            'tenant_id': str(tenant.id),
         },
         headers={'Authorization': f'Bearer {superuser_token}'},
     )
@@ -67,7 +65,6 @@ def test_read_users_with_user(api_client, user, user_token):
     user_schema = UserPublic.model_validate(user).model_dump()
     # Convert UUID to string for comparison with JSON response
     user_schema['id'] = str(user_schema['id'])
-    user_schema['tenant_id'] = str(user_schema['tenant_id'])
 
     response = api_client.get(
         f'/superuser/{user.id}',
@@ -91,9 +88,7 @@ def test_update_user_not_found(api_client, superuser_token):
     assert response.json() == {'detail': 'User Not Found'}
 
 
-def test_update_user_integrity_error(
-    api_client, user, superuser_token, tenant
-):
+def test_update_user_integrity_error(api_client, user, superuser_token):
     # creating new user
     api_client.post(
         '/superuser/',
@@ -101,7 +96,6 @@ def test_update_user_integrity_error(
             'full_name': 'name_test',
             'email': 'test@email.com',
             'password': 'test_password',
-            'tenant_id': str(tenant.id),
         },
         headers={'Authorization': f'Bearer {superuser_token}'},
     )

@@ -1,6 +1,5 @@
 """Utility functions for category management."""
 
-import uuid
 from typing import Optional
 
 from sqlalchemy import select
@@ -10,15 +9,14 @@ from src.models import Category
 
 
 async def get_or_create_category(
-    db: AsyncSession, category_name: str, tenant_id: uuid.UUID
+    db: AsyncSession, category_name: str
 ) -> Optional[Category]:
     """
-    Get or create a category with the given name for the specified tenant.
+    Get or create a category with the given name.
 
     Args:
         db: Database session
         category_name: Name of the category to retrieve or create
-        tenant_id: ID of the tenant the category belongs to
 
     Returns:
         The retrieved or newly created category
@@ -32,7 +30,6 @@ async def get_or_create_category(
     # Try to find existing category
     query = select(Category).where(
         Category.name == normalized_name,
-        Category.tenant_id == tenant_id,
         Category.is_active == True,  # noqa: E712
     )
 
@@ -45,7 +42,6 @@ async def get_or_create_category(
     # Otherwise, create a new category
     new_category = Category(
         name=normalized_name,
-        tenant_id=tenant_id,
     )
 
     db.add(new_category)

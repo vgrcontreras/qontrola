@@ -8,7 +8,6 @@ class UserSchema(BaseModel):
     email: EmailStr
     password: str
     is_superuser: bool = False
-    tenant_id: UUID | None = None
 
 
 class UserPublic(BaseModel):
@@ -17,7 +16,6 @@ class UserPublic(BaseModel):
     email: EmailStr
     is_superuser: bool
     is_active: bool
-    tenant_id: UUID
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -30,7 +28,6 @@ class UserUpdate(BaseModel):
     is_superuser: bool | None = None
     is_active: bool | None = None
     email: EmailStr | None = None
-    tenant_id: UUID | None = None
 
 
 class PasswordChange(BaseModel):

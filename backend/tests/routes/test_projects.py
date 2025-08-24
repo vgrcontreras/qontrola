@@ -8,7 +8,7 @@ from src.models import Project
 
 
 @pytest_asyncio.fixture
-async def db_project(session, superuser, tenant) -> Project:
+async def db_project(session, superuser) -> Project:
     project = Project(
         name='test_project',
         status_state='active',
@@ -16,7 +16,6 @@ async def db_project(session, superuser, tenant) -> Project:
         target_date=date(2024, 12, 31),
         created_by=superuser.id,
         is_active=True,
-        tenant_id=tenant.id,
     )
     session.add(project)
     await session.commit()

@@ -20,7 +20,6 @@ async def test_get_user_me(api_client, user, user_token):
     assert data['full_name'] == user.full_name
     assert str(data['id']) == str(user.id)
     assert data['is_active'] is True
-    assert str(data['tenant_id']) == str(user.tenant_id)
 
 
 @pytest.mark.asyncio
@@ -42,7 +41,6 @@ async def test_change_password_me(api_client, user, user_token):
     login_response = api_client.post(
         '/token',
         data={'username': user.email, 'password': 'new_password'},
-        headers={'X-Tenant-Domain': user.tenant.domain},
     )
     assert login_response.status_code == HTTPStatus.OK
     assert 'access_token' in login_response.json()
@@ -79,7 +77,6 @@ async def test_delete_user_me(api_client, user, user_token):
     login_response = api_client.post(
         '/token',
         data={'username': user.email, 'password': user.clean_password},
-        headers={'X-Tenant-Domain': user.tenant.domain},
     )
     # Login should fail - accept 400 or 401
     assert login_response.status_code in {

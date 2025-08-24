@@ -7,7 +7,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import (
-    CurrentTenant,
     CurrentUser,
     T_Session,
     get_current_active_superuser,
@@ -33,15 +32,13 @@ router = APIRouter()
 async def create_client(
     session: T_Session,
     client_schema: ClientRequestCreate,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ):
-    """Create a new client within the current tenant."""
-    # Check if client with same identifier exists in this tenant
+    """Create a new client."""
+    # Check if client with same identifier exists
     db_client = await session.scalar(
         select(Client).where(
             Client.identifier == client_schema.identifier,
-            Client.tenant_id == tenant.id,
         )
     )
 
@@ -51,10 +48,6 @@ async def create_client(
         )
 
     client_data = client_schema.model_dump()
-
-    client_data['tenant_id'] = tenant.id
-    client_data['tenant'] = tenant
-
     db_client = Client(**client_data)
 
     session.add(db_client)
@@ -73,13 +66,10 @@ async def create_client(
 async def delete_client(
     session: T_Session,
     client_id: UUID,
-    tenant: CurrentTenant,
 ):
-    """Delete a client from the current tenant (soft delete)."""
+    """Delete a client (soft delete)."""
     db_client = await session.scalar(
-        select(Client).where(
-            Client.id == client_id, Client.tenant_id == tenant.id
-        )
+        select(Client).where(Client.id == client_id)
     )
 
     if not db_client:
@@ -104,14 +94,11 @@ async def update_client(
     session: T_Session,
     client_id: UUID,
     client: ClientRequestUpdate,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ):
-    """Update a client within the current tenant."""
+    """Update a client."""
     db_client = await session.scalar(
-        select(Client).where(
-            Client.id == client_id, Client.tenant_id == tenant.id
-        )
+        select(Client).where(Client.id == client_id)
     )
 
     if not db_client:
@@ -143,15 +130,12 @@ async def update_client(
 async def get_client_by_id(
     session: T_Session,
     client_id: UUID,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ):
     """
-    Get a specific client from the current tenant.
+    Get a specific client.
     """
-    query = select(Client).where(
-        Client.id == client_id, Client.tenant_id == tenant.id
-    )
+    query = select(Client).where(Client.id == client_id)
 
     db_client = await session.scalar(query)
 
@@ -168,13 +152,12 @@ async def get_client_by_id(
 )
 async def read_all_clients(
     session: T_Session,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ):
     """
-    Get all clients within the current tenant.
+    Get all clients.
     """
-    query = select(Client).where(Client.tenant_id == tenant.id)
+    query = select(Client)
 
     clients = await session.scalars(query)
 

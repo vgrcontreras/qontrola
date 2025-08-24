@@ -6,7 +6,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import (
-    CurrentTenant,
     CurrentUser,
     T_Session,
     get_current_active_superuser,
@@ -34,14 +33,11 @@ async def create_project(
     session: T_Session,
     project: ProjectRequestCreate,
     current_user: CurrentUser,
-    tenant: CurrentTenant,
 ) -> Project:
-    """Create a new project within the current tenant."""
-    # Check if project exists in this tenant
+    """Create a new project."""
+    # Check if project exists
     project_db = await session.scalar(
-        select(Project).where(
-            Project.name == project.name, Project.tenant_id == tenant.id
-        )
+        select(Project).where(Project.name == project.name)
     )
 
     if project_db:
@@ -55,14 +51,13 @@ async def create_project(
     category_name = project_data.pop('category_name', None)
     if category_name:
         category = await get_or_create_category(
-            db=session, category_name=category_name, tenant_id=tenant.id
+            db=session, category_name=category_name
         )
         if category:
             project_data['category_id'] = category.id
 
     # Set the fields from the request
     project_data['created_by'] = current_user.id
-    project_data['tenant_id'] = tenant.id
 
     # Create the project with the provided data
     project_db = Project(**project_data)
@@ -82,15 +77,12 @@ async def create_project(
 async def read_project_by_id(
     session: T_Session,
     project_id: UUID,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ) -> Project:
     """
-    Get a specific project from the current tenant.
+    Get a specific project.
     """
-    query = select(Project).where(
-        Project.id == project_id, Project.tenant_id == tenant.id
-    )
+    query = select(Project).where(Project.id == project_id)
 
     project_db = await session.scalar(query)
 
@@ -109,13 +101,12 @@ async def read_project_by_id(
 )
 async def read_all_projects(
     session: T_Session,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ) -> list[Project]:
     """
-    Get all projects within the current tenant.
+    Get all projects.
     """
-    query = select(Project).where(Project.tenant_id == tenant.id)
+    query = select(Project)
 
     projects_db = await session.scalars(query)
 
@@ -132,15 +123,12 @@ async def delete_project(
     session: T_Session,
     project_id: UUID,
     current_user: CurrentUser,
-    tenant: CurrentTenant,
 ) -> dict:
     """
-    Delete (deactivate) a project from the current tenant.
+    Delete (deactivate) a project.
     """
     project_db = await session.scalar(
-        select(Project).where(
-            Project.id == project_id, Project.tenant_id == tenant.id
-        )
+        select(Project).where(Project.id == project_id)
     )
 
     if not project_db:
@@ -167,13 +155,10 @@ async def update_project(
     project_id: UUID,
     project: ProjectResquestUpdate,
     current_user: CurrentUser,
-    tenant: CurrentTenant,
 ) -> Project:
-    """Update a project within the current tenant."""
+    """Update a project."""
     project_db = await session.scalar(
-        select(Project).where(
-            Project.id == project_id, Project.tenant_id == tenant.id
-        )
+        select(Project).where(Project.id == project_id)
     )
 
     try:
@@ -189,7 +174,7 @@ async def update_project(
         category_name = project_data.pop('category_name', None)
         if category_name:
             category = await get_or_create_category(
-                db=session, category_name=category_name, tenant_id=tenant.id
+                db=session, category_name=category_name
             )
             if category:
                 project_data['category_id'] = category.id

@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from src.api.dependencies import CurrentTenant, CurrentUser, T_Session
+from src.api.dependencies import CurrentUser, T_Session
 from src.models import Category
 from src.schemas.base import Message
 from src.schemas.categories import (
@@ -27,15 +27,12 @@ async def create_category(
     session: T_Session,
     category: CategoryCreate,
     current_user: CurrentUser,
-    tenant: CurrentTenant,
 ) -> Category:
-    """Create a new category within the current tenant."""
-    # Check if category exists in this tenant with the same name
+    """Create a new category."""
+    # Check if category exists with the same name
     normalized_name = category.name.strip()
     category_db = await session.scalar(
-        select(Category).where(
-            Category.name == normalized_name, Category.tenant_id == tenant.id
-        )
+        select(Category).where(Category.name == normalized_name)
     )
 
     if category_db:
@@ -47,7 +44,6 @@ async def create_category(
     # Create the category
     category_db = Category(
         name=normalized_name,
-        tenant_id=tenant.id,
     )
 
     session.add(category_db)
@@ -65,15 +61,12 @@ async def create_category(
 async def read_category_by_id(
     session: T_Session,
     category_id: UUID,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ) -> Category:
     """
-    Get a specific category from the current tenant.
+    Get a specific category.
     """
-    query = select(Category).where(
-        Category.id == category_id, Category.tenant_id == tenant.id
-    )
+    query = select(Category).where(Category.id == category_id)
 
     category_db = await session.scalar(query)
 
@@ -92,14 +85,12 @@ async def read_category_by_id(
 )
 async def read_all_categories(
     session: T_Session,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ) -> dict:
     """
-    Get all categories within the current tenant.
+    Get all categories.
     """
     query = select(Category).where(
-        Category.tenant_id == tenant.id,
         Category.is_active == True,  # noqa: E712
     )
 
@@ -117,15 +108,12 @@ async def delete_category(
     session: T_Session,
     category_id: UUID,
     current_user: CurrentUser,
-    tenant: CurrentTenant,
 ) -> dict:
     """
-    Delete (deactivate) a category from the current tenant.
+    Delete (deactivate) a category.
     """
     category_db = await session.scalar(
-        select(Category).where(
-            Category.id == category_id, Category.tenant_id == tenant.id
-        )
+        select(Category).where(Category.id == category_id)
     )
 
     if not category_db:

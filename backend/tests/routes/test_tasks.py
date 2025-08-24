@@ -8,7 +8,7 @@ from src.models import Task
 
 
 @pytest_asyncio.fixture
-async def db_task(session, db_project, superuser, tenant) -> Task:
+async def db_task(session, db_project, superuser) -> Task:
     task = Task(
         title='Test Task',
         description='This is a test task',
@@ -17,12 +17,10 @@ async def db_task(session, db_project, superuser, tenant) -> Task:
         due_date=date(2024, 12, 31),
         project_id=db_project.id,
         created_by=superuser.id,
-        tenant_id=tenant.id,
         is_active=True,
     )
     # Set relationships after creation
     task.project = db_project
-    task.tenant = tenant
 
     session.add(task)
     await session.commit()

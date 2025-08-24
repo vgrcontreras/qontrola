@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from src.api.dependencies import CurrentTenant, CurrentUser, T_Session
+from src.api.dependencies import CurrentUser, T_Session
 from src.models import Project, Task
 from src.schemas.base import Message
 from src.schemas.tasks import (
@@ -28,14 +28,11 @@ async def create_task(
     session: T_Session,
     task: TaskRequestCreate,
     current_user: CurrentUser,
-    tenant: CurrentTenant,
 ) -> Task:
-    """Create a new task within the current tenant."""
+    """Create a new task."""
     # Check if project exists
     project_db = await session.scalar(
-        select(Project).where(
-            Project.id == task.project_id, Project.tenant_id == tenant.id
-        )
+        select(Project).where(Project.id == task.project_id)
     )
 
     if not project_db:
@@ -49,18 +46,16 @@ async def create_task(
     category_name = task_data.pop('category_name', None)
     if category_name:
         category = await get_or_create_category(
-            db=session, category_name=category_name, tenant_id=tenant.id
+            db=session, category_name=category_name
         )
         if category:
             task_data['category_id'] = category.id
 
     task_data['created_by'] = current_user.id
-    task_data['tenant_id'] = tenant.id
 
     # Create task instance
     task_db = Task(**task_data)
     # Set relationships after creation
-    task_db.tenant = tenant
     task_db.project = project_db
 
     session.add(task_db)
@@ -78,13 +73,12 @@ async def create_task(
 async def read_task_by_id(
     session: T_Session,
     task_id: UUID,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
 ) -> Task:
     """
-    Get a specific task from the current tenant.
+    Get a specific task.
     """
-    query = select(Task).where(Task.id == task_id, Task.tenant_id == tenant.id)
+    query = select(Task).where(Task.id == task_id)
 
     task_db = await session.scalar(query)
 
@@ -103,15 +97,14 @@ async def read_task_by_id(
 )
 async def read_all_tasks(
     session: T_Session,
-    tenant: CurrentTenant,
     current_user: CurrentUser,
     project_id: UUID | None = None,
 ) -> dict:
     """
-    Get all tasks within the current tenant.
+    Get all tasks.
     Optionally filter by project_id.
     """
-    query = select(Task).where(Task.tenant_id == tenant.id)
+    query = select(Task)
 
     if project_id:
         query = query.where(Task.project_id == project_id)
@@ -130,14 +123,11 @@ async def delete_task(
     session: T_Session,
     task_id: UUID,
     current_user: CurrentUser,
-    tenant: CurrentTenant,
 ) -> dict:
     """
-    Delete (deactivate) a task from the current tenant.
+    Delete (deactivate) a task.
     """
-    task_db = await session.scalar(
-        select(Task).where(Task.id == task_id, Task.tenant_id == tenant.id)
-    )
+    task_db = await session.scalar(select(Task).where(Task.id == task_id))
 
     if not task_db:
         raise HTTPException(
@@ -163,12 +153,9 @@ async def update_task(
     task_id: UUID,
     task: TaskRequestUpdate,
     current_user: CurrentUser,
-    tenant: CurrentTenant,
 ) -> Task:
-    """Update a task within the current tenant."""
-    task_db = await session.scalar(
-        select(Task).where(Task.id == task_id, Task.tenant_id == tenant.id)
-    )
+    """Update a task."""
+    task_db = await session.scalar(select(Task).where(Task.id == task_id))
 
     if not task_db:
         raise HTTPException(
@@ -182,7 +169,7 @@ async def update_task(
     category_name = task_data.pop('category_name', None)
     if category_name:
         category = await get_or_create_category(
-            db=session, category_name=category_name, tenant_id=tenant.id
+            db=session, category_name=category_name
         )
         if category:
             task_data['category_id'] = category.id
@@ -192,7 +179,6 @@ async def update_task(
         project_db = await session.scalar(
             select(Project).where(
                 Project.id == task_data['project_id'],
-                Project.tenant_id == tenant.id,
             )
         )
 

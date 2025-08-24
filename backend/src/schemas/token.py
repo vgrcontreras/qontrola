@@ -1,14 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str
-
-
-class EmailRequest(BaseModel):
-    email: EmailStr
-
-
-class TenantDomainResponse(BaseModel):
-    domain: str

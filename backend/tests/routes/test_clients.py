@@ -139,10 +139,6 @@ def test_get_all_clients(
     type_id = client_schema['type_identifier']
     assert response_client['type_identifier'] == type_id
     assert response_client['is_active'] == client_schema['is_active']
-    # UUID fields may be serialized differently (string vs UUID objects)
-    tenant_id1 = UUID(response_client['tenant_id'])
-    tenant_id2 = UUID(str(client_schema['tenant_id']))
-    assert tenant_id1 == tenant_id2
 
 
 def test_get_client_by_id(

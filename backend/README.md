@@ -1,130 +1,268 @@
 # Qontrola Backend
 
-Um sistema ERP multi-tenant construído com FastAPI, SQLAlchemy e PostgreSQL.
+A comprehensive ERP system built with FastAPI, SQLAlchemy, and PostgreSQL.
 
-## Multi-Tenant Architecture
+## Table of Contents
 
-This application implements a multi-tenant architecture with a shared database approach:
+- [Architecture](#architecture)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Quick Start with Docker Compose](#quick-start-with-docker-compose)
+- [Development Setup](#development-setup)
+- [Running Migrations](#running-migrations)
+- [Accessing the Application](#accessing-the-application)
+- [Environment Variables](#environment-variables)
+- [Documentation](#documentation)
 
-- Each tenant has its own isolated data but shares the same database and schema
-- Tenants are identified by a unique domain
-- All data is segregated by tenant_id in database queries
-- JWT tokens include tenant information for secure authentication
+## Architecture
 
-## Soft Delete Pattern
+This application implements a single-tenant architecture:
 
-This application implements a soft delete pattern:
+- All users and data belong to a single organization
+- Simplified authentication without tenant isolation
+- Direct access to all resources without tenant filtering
+- JWT tokens contain user information for secure authentication
 
-- Records are never physically deleted from the database
-- Instead, an `is_active` flag is set to `False` when a record is "deleted"
-- By default, GET endpoints only return active records
-- Add the query parameter `include_inactive=true` to include inactive records
+[↑ Back to top](#table-of-contents)
 
-This approach provides several benefits:
-- Data can be recovered if deleted accidentally
-- Historical data is preserved for auditing and analysis
-- Referential integrity is maintained
 
-### Key Features
 
-- **Tenant Registration**: New organizations can register and create their first admin user
-- **Tenant-Based Authorization**: Data access is strictly controlled by tenant boundaries
+## Features
+
+- **FastAPI Framework**: Modern, fast web framework for building APIs
+- **SQLAlchemy ORM**: Powerful and flexible ORM for database operations
+- **PostgreSQL Database**: Robust relational database with UUID support
+- **JWT Authentication**: Secure token-based authentication
+- **Automatic API Documentation**: Swagger UI available at `/docs`
+- **Input Validation**: Pydantic models for request/response validation
+- **User Management**: Create and manage users with role-based permissions
 - **Role-Based Permissions**:
-  - Superusers can manage all users within their tenant
+  - Superusers can manage all users and system resources
   - Regular users can only manage their own information
-- **Tenant Isolation**: All database queries include tenant filtering for data isolation
-- **Brazilian Identifier Validation**: Automatic validation of CPF (11 digits) and CNPJ (14 digits) identifiers
+- **Client Management**: Manage clients with Brazilian identifier validation
+- **Project Management**: Create and track projects with categories
+- **Task Management**: Create and assign tasks to projects
+- **Category System**: Organize projects and tasks with categories
+- **Brazilian Business Logic**: CPF/CNPJ validation for Brazilian clients
+- **Soft Delete**: Safe deletion with recovery capabilities
+- **Role-Based Access**: Different permission levels for users
 
-## API Usage
+[↑ Back to top](#table-of-contents)
 
-### Authentication
+## Prerequisites
 
-All authenticated endpoints require:
-1. A valid JWT token (via Bearer authentication)
-2. A tenant domain header (`X-Tenant-Domain`)
+Before running the application, ensure you have the following installed:
 
-### Tenant Registration
+- [Docker](https://docs.docker.com/get-docker/) (version 20.10 or higher)
+- [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0 or higher)
 
-```
-POST /tenants/register
-```
+[↑ Back to top](#table-of-contents)
 
-Request body:
-```json
-{
-  "name": "Organization Name",
-  "domain": "organization-domain",
-  "admin_user": {
-    "first_name": "Admin",
-    "last_name": "User",
-    "email": "admin@example.com",
-    "password": "secure_password"
-  }
-}
-```
+## Quick Start with Docker Compose
 
-### User Authentication
+The easiest way to get Qontrola Backend up and running is using Docker Compose. This will start all required services including PostgreSQL database, pgAdmin, and the FastAPI backend.
 
-```
-POST /token
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd qontrola/backend
 ```
 
-Headers:
-```
-X-Tenant-Domain: organization-domain
-```
+### 2. Start All Services
 
-Form data:
-- username: admin@example.com
-- password: secure_password
-
-### Client Management
-
-Clients can be created with CPF or CNPJ identifiers:
-
-```
-POST /clients
+```bash
+docker-compose up -d
 ```
 
-Request body:
-```json
-{
-  "name": "Client Name",
-  "client_type": "type",
-  "type_identifier": "cpf", // or "cnpj"
-  "identifier": "12345678901" // 11 digits for CPF, 14 digits for CNPJ
-}
+This command will:
+- Pull and start a PostgreSQL 16 database
+- Start pgAdmin for database management
+- Build and start the FastAPI backend application
+- Set up all necessary networking between services
+
+### 3. Verify Services
+
+Check that all services are running:
+
+```bash
+docker-compose ps
 ```
 
-### User Management
+You should see three services running:
+- `postgres` - PostgreSQL database (port 5432)
+- `pgadmin` - Database administration tool (port 5050)
+- `backend` - FastAPI application (port 8000)
 
-All user management endpoints follow these permission rules:
-- Superusers can manage all users within their tenant
-- Regular users can only view and modify their own data
+### 4. Initialize the Database
+
+The application will automatically run migrations and create the initial superuser on startup.
+
+### 5. Stop Services
+
+To stop all services:
+
+```bash
+docker-compose down
+```
+
+To stop services and remove volumes (⚠️ this will delete all data):
+
+```bash
+docker-compose down -v
+```
+
+[↑ Back to top](#table-of-contents)
 
 ## Development Setup
 
-1. Install Poetry
-2. Run `poetry install`
-3. Set up your .env file
-4. Run migrations with `poetry run alembic upgrade head`
-5. Start the server with `poetry run task run`
+For local development without Docker:
 
-## Running Migrations
+### 1. Install Dependencies
 
-After making model changes, generate a migration:
+Install Python 3.11+ and Poetry:
 
 ```bash
-python create_migration.py
+# Install Poetry
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Install project dependencies
+poetry install
+```
+
+### 2. Database Setup
+
+Start PostgreSQL using Docker:
+
+```bash
+docker-compose up postgres -d
+```
+
+### 3. Environment Configuration
+
+Create a `.env` file in the backend directory:
+
+```bash
+cp .env-example .env
+```
+
+Edit the `.env` file with your configuration (see [Environment Variables](#environment-variables) section).
+
+### 4. Database Migration
+
+Run database migrations:
+
+```bash
 poetry run alembic upgrade head
 ```
 
+### 5. Start Development Server
+
+```bash
+poetry run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+[↑ Back to top](#table-of-contents)
+
+## Running Migrations
+
+### With Docker Compose
+
+Migrations run automatically when starting the backend service. To run migrations manually:
+
+```bash
+docker-compose exec backend poetry run alembic upgrade head
+```
+
+### Local Development
+
+After making model changes:
+
+```bash
+# Generate migration
+poetry run alembic revision --autogenerate -m "Description of changes"
+
+# Apply migration
+poetry run alembic upgrade head
+```
+
+[↑ Back to top](#table-of-contents)
+
+## Accessing the Application
+
+Once the services are running, you can access:
+
+### FastAPI Backend
+- **API Base URL**: http://localhost:8000
+- **Interactive API Documentation**: http://localhost:8000/docs
+- **Alternative API Documentation**: http://localhost:8000/redoc
+
+### Database Administration
+- **pgAdmin**: http://localhost:5050
+  - Email: `admin@qontrola.com`
+  - Password: `admin`
+
+### Database Connection
+- **Host**: localhost (or `postgres` when connecting from within Docker)
+- **Port**: 5432
+- **Database**: qontrola
+- **Username**: postgres
+- **Password**: postgres
+
+### Default Superuser
+The application creates a default superuser on first startup:
+- **Email**: `admin@example.com`
+- **Password**: `admin`
+
+⚠️ **Important**: Change the default superuser password in production!
+
+[↑ Back to top](#table-of-contents)
+
 ## Documentation
 
-Para documentação detalhada sobre a arquitetura e funcionalidades do backend, consulte:
+For detailed documentation about the backend architecture and features, see:
 
-- [Documentação Completa](docs/README.md) - Índice de toda a documentação do backend
-- [Arquitetura do Backend](docs/backend_architecture.md) - Diagramas de arquitetura detalhados
-- [Arquitetura Multi-tenant](docs/multi_tenant_architecture.md) - Detalhes da implementação multi-tenant
-- [Autenticação e Segurança](docs/authentication_security.md) - Sistema de autenticação e práticas de segurança
-- [Referência da API](docs/api_reference.md) - Documentação completa dos endpoints
+- [Complete Documentation](docs/README.md) - Index of all backend documentation
+- [Backend Architecture](docs/backend_architecture.md) - Detailed architecture diagrams
+- [Authentication & Security](docs/authentication_security.md) - Authentication system and security practices
+- [API Reference](docs/api_reference.md) - Complete endpoint documentation
+
+[↑ Back to top](#table-of-contents)
+
+## Environment Variables
+
+The application uses the following environment variables:
+
+### Docker Compose (Configured automatically)
+When using Docker Compose, these variables are set automatically in the `docker-compose.yml` file:
+
+```yaml
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/qontrola
+SECRET_KEY=your_secret_key_here_please_change_in_production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+FIRST_SUPERUSER_EMAIL=admin@example.com
+FIRST_SUPERUSER_PASSWORD=admin
+```
+
+### Local Development (.env file)
+For local development, create a `.env` file:
+
+```env
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/qontrola
+SECRET_KEY=your-secret-key-here
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+ALGORITHM=HS256
+FIRST_SUPERUSER_EMAIL=admin@example.com
+FIRST_SUPERUSER_PASSWORD=admin_password
+```
+
+### Variable Descriptions
+- `DATABASE_URL`: PostgreSQL connection string
+- `SECRET_KEY`: Secret key for JWT token encryption (⚠️ Change in production!)
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: JWT token expiration time
+- `ALGORITHM`: JWT encryption algorithm
+- `FIRST_SUPERUSER_EMAIL`: Email for the initial superuser account
+- `FIRST_SUPERUSER_PASSWORD`: Password for the initial superuser account
+
+[↑ Back to top](#table-of-contents)

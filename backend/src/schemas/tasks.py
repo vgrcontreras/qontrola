@@ -24,7 +24,6 @@ class TaskResponse(BaseModel):
     project_id: UUID
     created_at: datetime
     created_by: UUID
-    tenant_id: UUID
     is_active: bool
     category_id: UUID | None = None
 
