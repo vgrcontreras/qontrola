@@ -1,159 +1,268 @@
-# qontrola: Organize seus projetos e finanças sem complicação
+# Qontrola Backend
 
-![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow)
+A comprehensive ERP system built with FastAPI, SQLAlchemy, and PostgreSQL.
 
-Já foi prestador de serviço e sentiu dificuldade pra organizar as tarefas do projeto e entender, no fim das contas, quanto entrou e quanto saiu?  
-A **qontrola** nasceu justamente dessa dor. Ela te ajuda a ter controle real sobre seus projetos, tarefas e finanças — tudo num só lugar.
+## Table of Contents
 
-Pensada para quem presta serviços por projeto (como agências, consultorias e freelancers), a qontrola une visão estratégica da empresa com o controle financeiro detalhado de cada entrega.
+- [Architecture](#architecture)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Quick Start with Docker Compose](#quick-start-with-docker-compose)
+- [Development Setup](#development-setup)
+- [Running Migrations](#running-migrations)
+- [Accessing the Application](#accessing-the-application)
+- [Environment Variables](#environment-variables)
+- [Documentation](#documentation)
 
-## 📌 Índice
+## Architecture
 
-- [Sobre o Projeto](#💡-sobre-o-projeto)
-- [Funcionalidades](#✅-funcionalidades)
-- [Exemplos de Uso](#🧩-exemplos-de-uso)
-- [Tecnologias Utilizadas](#🔧-tecnologias-utilizadas)
-- [Como Rodar o Projeto](#▶️-como-rodar-o-projeto)
-- [Docker Setup](#🐳-docker-setup)
-- [Modelagem de Dados](#🧠-modelagem-de-dados)
-- [Documentação Técnica](#📚-documentação-técnica)
+This application implements a single-tenant architecture:
 
-## 💡 Sobre o Projeto
+- All users and data belong to a single organization
+- Simplified authentication without tenant isolation
+- Direct access to all resources without tenant filtering
+- JWT tokens contain user information for secure authentication
 
-Gerenciar tarefas já é complicado. Agora, somar isso ao controle financeiro por projeto... é o caos — e é aí que a maioria dos ERPs falha.
-
-A qontrola veio resolver isso:  
-💥 Nada de planilhas perdidas, informações soltas ou dashboards que ninguém entende.
-
-A plataforma foi desenhada para te ajudar a responder perguntas como:
-- Esse projeto está dando lucro?
-- Onde estou gastando mais do que devia?
-- Qual cliente está mais rentável?
-
-### A qontrola te oferece:
-- **Controle micro:** cada projeto tem seu próprio fluxo de caixa, receitas e despesas.
-- **Visão macro:** veja como anda a empresa como um todo, com relatórios agregados e KPIs.
-- **Interface simples:** ideal pra quem quer controlar o negócio sem ser expert em planilhas ou finanças.
-
-## ✅ Funcionalidades
-
-### Gestão de Projetos
-- Cadastro com status, orçamento, prazos e milestones.
-- Acompanhamento de orçamento previsto vs. realizado.
-
-### Controle Financeiro
-- Receita e despesa por projeto.
-- Fluxo de caixa individual e consolidado.
-- Categorias, centros de custo e tipos de despesa.
-
-### Permissões e Acesso
-- Perfis de usuário (admin, padrão).
-- Autenticação com Supabase.
-- Auditoria e histórico de alterações.
-
-## 🧩 Exemplos de Uso
-
-- Uma empresa cria sua conta e adiciona 5 membros.
-- Cada colaborador acessa só os dados da própria empresa.
-- Os projetos são organizados por departamento (TI, Design, Comercial).
-- Cada setor consegue acompanhar seus próprios resultados.
-
----
-
-## 🔧 Tecnologias Utilizadas
-
-### Backend
-- **FastAPI** - Framework web de alta performance para APIs
-- **SQLAlchemy** - ORM para interação com banco de dados
-- **Pydantic** - Validação de dados e configurações
-- **Alembic** - Migrações de banco de dados
-- **Asyncpg** - Driver assíncrono para PostgreSQL
-- **Uvicorn** - Servidor ASGI para Python
-- **PyJWT** - Implementação de JSON Web Tokens
-- **Argon2** - Algoritmo de hash seguro para senhas
-
-### Frontend
-- Em desenvolvimento
-
-### Infraestrutura
-- **Docker & Docker Compose** - Containerização e orquestração
-- **PostgreSQL** - Banco de dados relacional
-- **pgAdmin** - Ferramenta de administração para PostgreSQL
-
-### Desenvolvimento e Qualidade
-- **Poetry** - Gerenciamento de dependências Python
-- **Pytest** - Framework de testes
-- **Ruff** - Linter e formatador de código
-- **Pre-commit** - Hooks de Git para garantir qualidade
-- **MkDocs** - Geração de documentação
-- **GitHub Actions** - CI/CD
+[↑ Back to top](#table-of-contents)
 
 
-## ▶️ Como Rodar o Projeto
 
-### Usando Docker Compose
+## Features
 
-O projeto pode ser executado facilmente usando Docker Compose, que configurará automaticamente o ambiente com todos os serviços necessários.
+- **FastAPI Framework**: Modern, fast web framework for building APIs
+- **SQLAlchemy ORM**: Powerful and flexible ORM for database operations
+- **PostgreSQL Database**: Robust relational database with UUID support
+- **JWT Authentication**: Secure token-based authentication
+- **Automatic API Documentation**: Swagger UI available at `/docs`
+- **Input Validation**: Pydantic models for request/response validation
+- **User Management**: Create and manage users with role-based permissions
+- **Role-Based Permissions**:
+  - Superusers can manage all users and system resources
+  - Regular users can only manage their own information
+- **Client Management**: Manage clients with Brazilian identifier validation
+- **Project Management**: Create and track projects with categories
+- **Task Management**: Create and assign tasks to projects
+- **Category System**: Organize projects and tasks with categories
+- **Brazilian Business Logic**: CPF/CNPJ validation for Brazilian clients
+- **Soft Delete**: Safe deletion with recovery capabilities
+- **Role-Based Access**: Different permission levels for users
+
+[↑ Back to top](#table-of-contents)
+
+## Prerequisites
+
+Before running the application, ensure you have the following installed:
+
+- [Docker](https://docs.docker.com/get-docker/) (version 20.10 or higher)
+- [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0 or higher)
+
+[↑ Back to top](#table-of-contents)
+
+## Quick Start with Docker Compose
+
+The easiest way to get Qontrola Backend up and running is using Docker Compose. This will start all required services including PostgreSQL database, pgAdmin, and the FastAPI backend.
+
+### 1. Clone the Repository
 
 ```bash
-# Clonar o repositório
-git clone git@github.com:vgrcontreras/qontrola.git
-cd qontrola
-
-# Iniciar todos os serviços (backend, postgres, pgadmin)
-docker compose up -d
+git clone <repository-url>
+cd qontrola/backend
 ```
 
-Para interromper todos os serviços:
+### 2. Start All Services
+
 ```bash
-docker compose down
+docker-compose up -d
 ```
 
-Para reconstruir e reiniciar os serviços (após alterações):
+This command will:
+- Pull and start a PostgreSQL 16 database
+- Start pgAdmin for database management
+- Build and start the FastAPI backend application
+- Set up all necessary networking between services
+
+### 3. Verify Services
+
+Check that all services are running:
+
 ```bash
-docker compose up -d --build
+docker-compose ps
 ```
 
-Para remover volumes também (cuidado: isso apagará dados persistentes):
+You should see three services running:
+- `postgres` - PostgreSQL database (port 5432)
+- `pgadmin` - Database administration tool (port 5050)
+- `backend` - FastAPI application (port 8000)
+
+### 4. Initialize the Database
+
+The application will automatically run migrations and create the initial superuser on startup.
+
+### 5. Stop Services
+
+To stop all services:
+
 ```bash
-docker compose down -v
+docker-compose down
 ```
 
-### Acessando os Serviços
+To stop services and remove volumes (⚠️ this will delete all data):
 
-Após iniciar os serviços, você pode acessá-los através das seguintes URLs:
+```bash
+docker-compose down -v
+```
 
-- **Backend API**: http://localhost:8000
+[↑ Back to top](#table-of-contents)
+
+## Development Setup
+
+For local development without Docker:
+
+### 1. Install Dependencies
+
+Install Python 3.11+ and Poetry:
+
+```bash
+# Install Poetry
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Install project dependencies
+poetry install
+```
+
+### 2. Database Setup
+
+Start PostgreSQL using Docker:
+
+```bash
+docker-compose up postgres -d
+```
+
+### 3. Environment Configuration
+
+Create a `.env` file in the backend directory:
+
+```bash
+cp .env-example .env
+```
+
+Edit the `.env` file with your configuration (see [Environment Variables](#environment-variables) section).
+
+### 4. Database Migration
+
+Run database migrations:
+
+```bash
+poetry run alembic upgrade head
+```
+
+### 5. Start Development Server
+
+```bash
+poetry run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+[↑ Back to top](#table-of-contents)
+
+## Running Migrations
+
+### With Docker Compose
+
+Migrations run automatically when starting the backend service. To run migrations manually:
+
+```bash
+docker-compose exec backend poetry run alembic upgrade head
+```
+
+### Local Development
+
+After making model changes:
+
+```bash
+# Generate migration
+poetry run alembic revision --autogenerate -m "Description of changes"
+
+# Apply migration
+poetry run alembic upgrade head
+```
+
+[↑ Back to top](#table-of-contents)
+
+## Accessing the Application
+
+Once the services are running, you can access:
+
+### FastAPI Backend
+- **API Base URL**: http://localhost:8000
+- **Interactive API Documentation**: http://localhost:8000/docs
+- **Alternative API Documentation**: http://localhost:8000/redoc
+
+### Database Administration
 - **pgAdmin**: http://localhost:5050
+  - Email: `admin@qontrola.com`
+  - Password: `admin`
 
-### Acessando o Banco de Dados via pgAdmin
+### Database Connection
+- **Host**: localhost (or `postgres` when connecting from within Docker)
+- **Port**: 5432
+- **Database**: qontrola
+- **Username**: postgres
+- **Password**: postgres
 
-1. Acesse pgAdmin em http://localhost:5050
-2. Credenciais de acesso ao pgAdmin:
-   - **Email**: admin@qontrola.com
-   - **Senha**: admin
+### Default Superuser
+The application creates a default superuser on first startup:
+- **Email**: `admin@example.com`
+- **Password**: `admin`
 
-3. Para conectar ao servidor PostgreSQL:
-   - Clique em "Add New Server"
-   - Na aba "General", defina um nome para o servidor (ex: "qontrola")
-   - Na aba "Connection", preencha:
-     - **Host**: postgres
-     - **Port**: 5432
-     - **Maintenance database**: qontrola
-     - **Username**: postgres
-     - **Password**: postgres
-   - Clique em "Save"
+⚠️ **Important**: Change the default superuser password in production!
 
-Agora você terá acesso ao banco de dados PostgreSQL através da interface do pgAdmin.
+[↑ Back to top](#table-of-contents)
 
----
+## Documentation
 
-Para documentação mais detalhada sobre a configuração do Docker, incluindo solução de problemas, consulte [Docker Setup Documentation](docs/docker-setup.md).
+For detailed documentation about the backend architecture and features, see:
 
-## Documentação Técnica
+- [Complete Documentation](docs/README.md) - Index of all backend documentation
+- [Backend Architecture](docs/backend_architecture.md) - Detailed architecture diagrams
+- [Authentication & Security](docs/authentication_security.md) - Authentication system and security practices
+- [API Reference](docs/api_reference.md) - Complete endpoint documentation
 
-Se você é desenvolvedor ou tem curiosidade sobre como funciona o backend da qontrola, temos uma documentação detalhada disponível:
+[↑ Back to top](#table-of-contents)
 
-- [Arquitetura do Backend](backend/docs/README.md) - Explore os diagramas e detalhes técnicos da implementação backend
+## Environment Variables
 
-Esta documentação inclui informações sobre a arquitetura multi-tenant, fluxos de autenticação, modelos de dados e endpoints da API.
+The application uses the following environment variables:
+
+### Docker Compose (Configured automatically)
+When using Docker Compose, these variables are set automatically in the `docker-compose.yml` file:
+
+```yaml
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/qontrola
+SECRET_KEY=your_secret_key_here_please_change_in_production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+FIRST_SUPERUSER_EMAIL=admin@example.com
+FIRST_SUPERUSER_PASSWORD=admin
+```
+
+### Local Development (.env file)
+For local development, create a `.env` file:
+
+```env
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/qontrola
+SECRET_KEY=your-secret-key-here
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+ALGORITHM=HS256
+FIRST_SUPERUSER_EMAIL=admin@example.com
+FIRST_SUPERUSER_PASSWORD=admin_password
+```
+
+### Variable Descriptions
+- `DATABASE_URL`: PostgreSQL connection string
+- `SECRET_KEY`: Secret key for JWT token encryption (⚠️ Change in production!)
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: JWT token expiration time
+- `ALGORITHM`: JWT encryption algorithm
+- `FIRST_SUPERUSER_EMAIL`: Email for the initial superuser account
+- `FIRST_SUPERUSER_PASSWORD`: Password for the initial superuser account
+
+[↑ Back to top](#table-of-contents)
